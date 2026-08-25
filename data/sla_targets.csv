@@ -1,0 +1,5 @@
+priority,response_target_minutes,resolution_target_minutes,description
+P1,15,240,Critical business service unavailable or confirmed severe security impact
+P2,30,480,High business impact or time-sensitive degradation
+P3,240,2880,Standard single-user incident or normal operational request
+P4,1440,7200,Low-impact request or planned fulfillment

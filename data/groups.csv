@@ -1,0 +1,11 @@
+group_id,group_name,group_type,owner,description
+GRP001,GG-Finance,Security,Maya Chen,Finance department baseline access
+GRP002,GG-HR,Security,Sofia Ramirez,HR department baseline access
+GRP003,GG-Sales,Security,Daniel Brooks,Sales department baseline access
+GRP004,GG-Operations,Security,Marcus Lee,Operations department baseline access
+GRP005,GG-Engineering,Security,Noah Williams,Engineering department baseline access
+GRP006,GG-VPN-Users,Security,Network Operations,Approved remote-access users
+GRP007,GG-Remote-Workers,Security,Service Desk Tier 2,Remote-work configuration baseline
+GRP008,GG-Printer-Finance,Security,Maya Chen,Finance printer queue access
+GRP009,GG-M365-Standard,Security,Microsoft 365 Support,Fictional standard productivity license group
+GRP010,GG-Intune-Windows,Security,Endpoint Management,Fictional Windows enrollment and compliance group

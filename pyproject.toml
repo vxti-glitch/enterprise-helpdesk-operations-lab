@@ -1,0 +1,11 @@
+[project]
+name = "enterprise-helpdesk-operations-lab"
+version = "1.0.0"
+description = "A clearly labeled, simulated Tier 1 service-desk portfolio lab"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "vxti-glitch" }]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

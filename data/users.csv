@@ -1,0 +1,16 @@
+user_id,display_name,given_name,surname,sam_account_name,user_principal_name,department,title,manager_email,work_arrangement,employment_status,asset_id
+USR001,Maya Chen,Maya,Chen,mchen,mchen@northstar.example,Finance,Finance Manager,amitchell@northstar.example,Hybrid,Active,NS-LT-001
+USR002,Daniel Brooks,Daniel,Brooks,dbrooks,dbrooks@northstar.example,Sales,Sales Manager,amitchell@northstar.example,Remote,Active,NS-LT-002
+USR003,Sofia Ramirez,Sofia,Ramirez,sramirez,sramirez@northstar.example,HR,HR Specialist,amitchell@northstar.example,Hybrid,Active,NS-LT-003
+USR004,Marcus Lee,Marcus,Lee,mlee,mlee@northstar.example,Operations,Operations Coordinator,amitchell@northstar.example,On-site,Active,NS-LT-004
+USR005,Olivia Bennett,Olivia,Bennett,obennett,obennett@northstar.example,Finance,Accounts Payable Specialist,mchen@northstar.example,Remote,Active,NS-LT-005
+USR006,Ethan Carter,Ethan,Carter,ecarter,ecarter@northstar.example,Sales,Account Executive,dbrooks@northstar.example,Remote,Active,NS-LT-006
+USR007,Noah Williams,Noah,Williams,nwilliams,nwilliams@northstar.example,Engineering,Systems Engineer,amitchell@northstar.example,Hybrid,Active,NS-LT-007
+USR008,Ava Mitchell,Ava,Mitchell,amitchell,amitchell@northstar.example,Management,Chief Operating Officer,,Hybrid,Active,NS-LT-008
+USR009,Priya Patel,Priya,Patel,ppatel,ppatel@northstar.example,Engineering,Quality Engineer,nwilliams@northstar.example,Remote,Active,NS-LT-009
+USR010,Liam Foster,Liam,Foster,lfoster,lfoster@northstar.example,Operations,Facilities Coordinator,mlee@northstar.example,On-site,Active,NS-LT-010
+USR011,Grace Turner,Grace,Turner,gturner,gturner@northstar.example,HR,Recruiting Coordinator,sramirez@northstar.example,Hybrid,Active,NS-LT-011
+USR012,Caleb Johnson,Caleb,Johnson,cjohnson,cjohnson@northstar.example,Sales,Sales Development Representative,dbrooks@northstar.example,Remote,Active,NS-LT-012
+USR013,Nina Park,Nina,Park,npark,npark@northstar.example,Finance,Financial Analyst,mchen@northstar.example,Hybrid,Active,NS-LT-013
+USR014,Lucas Reed,Lucas,Reed,lreed,lreed@northstar.example,Sales,Sales Representative,dbrooks@northstar.example,Remote,Inactive,NS-LT-014
+USR015,Jordan Kim,Jordan,Kim,jkim,jkim@northstar.example,Finance,Junior Financial Analyst,mchen@northstar.example,Hybrid,Active,NS-LT-015
