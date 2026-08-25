@@ -6,7 +6,7 @@ This section turns the documented identity cases into hands-on practice. It is o
 
 Use an isolated virtual network and disposable Windows Server/client VMs. Take a checkpoint before promotion and before bulk changes. Do not connect the lab to an employer domain, production tenant, or network you do not administer.
 
-The reserved DNS root is `northstar.example`; the script safeguards reject any other connected domain.
+The reserved DNS root is fixed to `northstar.example`; the scripts reject every other connected domain and require `OU=Northstar Lab` to carry the sentinel `SYNTHETIC-NORTHSTAR-PORTFOLIO-LAB-V2` before a mutation is possible.
 
 ## Build outline
 
@@ -42,8 +42,8 @@ Run them only inside the disposable server VM after reviewing Microsoft's prompt
 | Query and unlock a synthetic account | INC002 | Before/after account state without passwords |
 | Reset a password securely | INC001 | `-WhatIf` plus change-at-next-sign-in state |
 | Apply an approved department group | INC003 | Membership comparison and share validation |
-| Stage Jordan Kim's identity | INC004 | Disabled import; approved OU and manager relationship |
-| Disable and move Lucas Reed | INC005 | Effective-time note; disabled state; group reconciliation |
+| Stage Jordan Kim's identity | REQ001 | Disabled import; approved OU and manager relationship |
+| Disable and move Lucas Reed | REQ002 | Effective-time note; disabled state; group reconciliation |
 | Test DNS from the client | INC012 | Adapter DNS; lookup failure; approved correction; validation |
 
 ## Evidence rules

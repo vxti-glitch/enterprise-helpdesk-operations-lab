@@ -1,12 +1,12 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-Queries or performs a guarded Tier 1 account action in the isolated lab.
+Queries or performs a tightly guarded Tier 1 account action in the isolated lab.
 
 .DESCRIPTION
-Query is read-only and is the default. Mutating actions require -Execute, verify
-the exact domain DNS root, honor -WhatIf/-Confirm, and write a secret-free local
-audit event. Password reset uses a secure prompt and never writes the value.
+Query is read-only. Every mutation requires -Execute, a synthetic INC/REQ ID,
+the fixed northstar.example domain, a sentinel-marked OU, a marked synthetic
+user, and (for membership changes) an explicitly allowlisted marked group.
 #>
 [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
 param(
@@ -19,94 +19,111 @@ param(
 
     [string]$GroupName,
 
-    [switch]$Execute,
+    [ValidatePattern('^(?:INC|REQ)\d{3}$')]
+    [string]$TicketId,
 
-    [ValidateNotNullOrEmpty()]
-    [string]$ExpectedDomainDnsRoot = 'northstar.example',
+    [switch]$Execute,
 
     [string]$AuditPath = (Join-Path $PSScriptRoot '..\..\evidence\private\ad_action_audit.jsonl')
 )
 
 $ErrorActionPreference = 'Stop'
-Import-Module ActiveDirectory -ErrorAction Stop
-$domain = Get-ADDomain -ErrorAction Stop
-if ($domain.DNSRoot -ine $ExpectedDomainDnsRoot) {
-    throw "Safety stop: connected domain '$($domain.DNSRoot)' does not exactly match '$ExpectedDomainDnsRoot'."
-}
+Import-Module (Join-Path $PSScriptRoot 'NorthstarLabGuard.psm1') -Force
+$context = Get-NorthstarLabContext
+$user = Get-NorthstarLabUser -SamAccountName $SamAccountName -Context $context
 
-$user = Get-ADUser -Identity $SamAccountName -Properties Enabled, LockedOut, PasswordExpired, MemberOf, UserPrincipalName -ErrorAction Stop
 if ($Action -eq 'Query') {
-    $user | Select-Object SamAccountName, UserPrincipalName, Enabled, LockedOut, PasswordExpired, DistinguishedName, MemberOf
+    $user | Select-Object SamAccountName, UserPrincipalName, Enabled, LockedOut, PasswordExpired, DistinguishedName, MemberOf, Description
     return
 }
 
 if (-not $Execute) {
-    throw "Action '$Action' is state-changing. Review Query output; then use -Execute -WhatIf before an authorized lab change."
+    throw "Action '$Action' is state-changing. Review Query output; then use -Execute -TicketId INC### or REQ### -WhatIf before an authorized synthetic lab change."
 }
-
+if ([string]::IsNullOrWhiteSpace($TicketId)) {
+    throw "Action '$Action' requires a synthetic -TicketId such as INC012 or REQ001."
+}
 if ($Action -in @('AddGroup', 'RemoveGroup') -and [string]::IsNullOrWhiteSpace($GroupName)) {
     throw "-GroupName is required for action '$Action'."
 }
 
-$changed = $false
-switch ($Action) {
-    'Unlock' {
-        if ($PSCmdlet.ShouldProcess($SamAccountName, 'Unlock lab account')) {
-            Unlock-ADAccount -Identity $user
-            $changed = $true
-        }
-    }
-    'ResetPassword' {
-        $temporaryPassword = Read-Host 'Enter a temporary LAB password (input is hidden and will not be logged)' -AsSecureString
-        if ($PSCmdlet.ShouldProcess($SamAccountName, 'Reset lab password and require change at next sign-in')) {
-            Set-ADAccountPassword -Identity $user -Reset -NewPassword $temporaryPassword
-            Set-ADUser -Identity $user -ChangePasswordAtLogon $true
-            $changed = $true
-        }
-        $temporaryPassword = $null
-    }
-    'Enable' {
-        if ($PSCmdlet.ShouldProcess($SamAccountName, 'Enable lab account')) {
-            Enable-ADAccount -Identity $user
-            $changed = $true
-        }
-    }
-    'Disable' {
-        if ($PSCmdlet.ShouldProcess($SamAccountName, 'Disable lab account')) {
-            Disable-ADAccount -Identity $user
-            $changed = $true
-        }
-    }
-    'AddGroup' {
-        $group = Get-ADGroup -Identity $GroupName -ErrorAction Stop
-        if ($PSCmdlet.ShouldProcess("$SamAccountName -> $GroupName", 'Add lab group membership')) {
-            Add-ADGroupMember -Identity $group -Members $user
-            $changed = $true
-        }
-    }
-    'RemoveGroup' {
-        $group = Get-ADGroup -Identity $GroupName -ErrorAction Stop
-        if ($PSCmdlet.ShouldProcess("$SamAccountName -> $GroupName", 'Remove lab group membership')) {
-            Remove-ADGroupMember -Identity $group -Members $user -Confirm:$false
-            $changed = $true
-        }
-    }
+$privateEvidenceRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\evidence\private'))
+$fullAuditPath = [System.IO.Path]::GetFullPath($AuditPath)
+if (-not ($fullAuditPath.StartsWith($privateEvidenceRoot, [System.StringComparison]::OrdinalIgnoreCase))) {
+    throw 'Safety stop: audit output must remain under evidence/private/.'
 }
 
-if ($changed) {
-    $auditDirectory = Split-Path -Parent $AuditPath
-    if ($auditDirectory -and -not (Test-Path -LiteralPath $auditDirectory)) {
-        New-Item -ItemType Directory -Path $auditDirectory -Force | Out-Null
+$allowedGroupNames = @(Import-Csv -LiteralPath (Join-Path $PSScriptRoot '..\..\data\ad_groups.csv') | Select-Object -ExpandProperty group_name)
+$group = $null
+if ($Action -in @('AddGroup', 'RemoveGroup')) {
+    $group = Get-NorthstarLabGroup -GroupName $GroupName -Context $context -AllowedGroupNames $allowedGroupNames
+}
+
+$target = if ($group) { "$SamAccountName -> $GroupName" } else { $SamAccountName }
+$operation = switch ($Action) {
+    'Unlock' { 'Unlock marked synthetic lab account' }
+    'ResetPassword' { 'Reset marked synthetic lab password and require change at next sign-in' }
+    'Enable' { 'Enable marked synthetic lab account' }
+    'Disable' { 'Disable marked synthetic lab account' }
+    'AddGroup' { 'Add marked synthetic user to allowlisted lab group' }
+    'RemoveGroup' { 'Remove marked synthetic user from allowlisted lab group' }
+}
+
+if (-not $PSCmdlet.ShouldProcess($target, $operation)) {
+    [pscustomobject]@{ simulation = $true; ticket_id = $TicketId; action = $Action; outcome = 'Planned'; target = $target; state_changed = $false; secret_recorded = $false }
+    return
+}
+
+$outcome = 'Succeeded'
+$detail = ''
+$changed = $false
+try {
+    switch ($Action) {
+        'Unlock' {
+            if ($user.LockedOut) { Unlock-ADAccount -Identity $user; $changed = $true; $detail = 'Unlocked marked synthetic account.' }
+            else { $outcome = 'NotNeeded'; $detail = 'Account was not locked.' }
+        }
+        'ResetPassword' {
+            $temporaryPassword = Read-Host 'Enter a temporary LAB password (hidden and never logged)' -AsSecureString
+            try {
+                Set-ADAccountPassword -Identity $user -Reset -NewPassword $temporaryPassword
+                try {
+                    Set-ADUser -Identity $user -ChangePasswordAtLogon $true
+                    $changed = $true; $detail = 'Password reset and change-at-logon flag applied; secret was not recorded.'
+                }
+                catch {
+                    $outcome = 'Partial'; $detail = 'Password reset completed but change-at-logon failed; review the marked lab account manually.'
+                    Write-NorthstarLabAudit -AuditPath $fullAuditPath -Context $context -TicketId $TicketId -Action $Action -Outcome $outcome -SamAccountName $SamAccountName -GroupName $GroupName -Detail $detail
+                    throw
+                }
+            }
+            finally { $temporaryPassword = $null }
+        }
+        'Enable' {
+            if (-not $user.Enabled) { Enable-ADAccount -Identity $user; $changed = $true; $detail = 'Enabled marked synthetic account.' }
+            else { $outcome = 'NotNeeded'; $detail = 'Account was already enabled.' }
+        }
+        'Disable' {
+            if ($user.Enabled) { Disable-ADAccount -Identity $user; $changed = $true; $detail = 'Disabled marked synthetic account.' }
+            else { $outcome = 'NotNeeded'; $detail = 'Account was already disabled.' }
+        }
+        'AddGroup' {
+            if ($user.MemberOf -contains $group.DistinguishedName) { $outcome = 'NotNeeded'; $detail = 'Membership already present.' }
+            else { Add-ADGroupMember -Identity $group -Members $user; $changed = $true; $detail = 'Added marked user to allowlisted marked group.' }
+        }
+        'RemoveGroup' {
+            if ($user.MemberOf -notcontains $group.DistinguishedName) { $outcome = 'NotNeeded'; $detail = 'Membership was not present.' }
+            else { Remove-ADGroupMember -Identity $group -Members $user -Confirm:$false; $changed = $true; $detail = 'Removed marked user from allowlisted marked group.' }
+        }
     }
-    [pscustomobject]@{
-        timestamp_utc  = [DateTime]::UtcNow.ToString('o')
-        simulation     = $true
-        domain         = $domain.DNSRoot
-        operator       = [System.Environment]::UserName
-        action         = $Action
-        sam_account    = $SamAccountName
-        group          = $GroupName
-        secret_recorded = $false
-    } | ConvertTo-Json -Compress | Add-Content -LiteralPath $AuditPath -Encoding UTF8
-    Write-Host "Completed '$Action' in the isolated lab. A secret-free local audit event was written."
+    $postCheck = Get-NorthstarLabUser -SamAccountName $SamAccountName -Context $context
+    Write-NorthstarLabAudit -AuditPath $fullAuditPath -Context $context -TicketId $TicketId -Action $Action -Outcome $outcome -SamAccountName $SamAccountName -GroupName $GroupName -Detail $detail
+    [pscustomobject]@{ simulation = $true; ticket_id = $TicketId; action = $Action; outcome = $outcome; target = $target; state_changed = $changed; secret_recorded = $false; post_check_dn = $postCheck.DistinguishedName; detail = $detail }
+}
+catch {
+    if ($outcome -ne 'Partial') {
+        $failureDetail = if ($detail) { "$detail Failure: $($_.Exception.Message)" } else { $_.Exception.Message }
+        Write-NorthstarLabAudit -AuditPath $fullAuditPath -Context $context -TicketId $TicketId -Action $Action -Outcome 'Failed' -SamAccountName $SamAccountName -GroupName $GroupName -Detail $failureDetail
+    }
+    throw
 }
