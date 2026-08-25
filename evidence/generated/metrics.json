@@ -1,0 +1,73 @@
+{
+  "metrics": {
+    "average_resolution_minutes": 782.6,
+    "average_response_minutes": 18.7,
+    "by_priority": {
+      "P1": {
+        "both_met": 1,
+        "compliance_percent": 100.0,
+        "resolution_met": 1,
+        "response_met": 1,
+        "tickets": 1
+      },
+      "P2": {
+        "both_met": 6,
+        "compliance_percent": 100.0,
+        "resolution_met": 6,
+        "response_met": 6,
+        "tickets": 6
+      },
+      "P3": {
+        "both_met": 28,
+        "compliance_percent": 93.3,
+        "resolution_met": 28,
+        "response_met": 30,
+        "tickets": 30
+      },
+      "P4": {
+        "both_met": 2,
+        "compliance_percent": 66.7,
+        "resolution_met": 2,
+        "response_met": 3,
+        "tickets": 3
+      }
+    },
+    "dataset_label": "SIMULATED PORTFOLIO DATA",
+    "escalation_percent": 20.0,
+    "escalations": 8,
+    "first_contact_resolution_percent": 65.0,
+    "first_contact_resolutions": 26,
+    "median_resolution_minutes": 65.0,
+    "median_response_minutes": 16.5,
+    "missed_sla_tickets": [
+      {
+        "priority": "P3",
+        "resolution_met": false,
+        "resolution_minutes": 4500.0,
+        "response_met": true,
+        "response_minutes": 25.0,
+        "ticket_id": "INC019"
+      },
+      {
+        "priority": "P3",
+        "resolution_met": false,
+        "resolution_minutes": 4500.0,
+        "response_met": true,
+        "response_minutes": 35.0,
+        "ticket_id": "INC033"
+      },
+      {
+        "priority": "P4",
+        "resolution_met": false,
+        "resolution_minutes": 8820.0,
+        "response_met": true,
+        "response_minutes": 60.0,
+        "ticket_id": "INC038"
+      }
+    ],
+    "sla_compliance_percent": 92.5,
+    "sla_compliant": 37,
+    "ticket_count": 40
+  },
+  "source": "data/tickets.csv"
+}

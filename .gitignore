@@ -1,0 +1,33 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.idea/
+.vscode/
+*.log
+*.tmp
+*.bak
+Thumbs.db
+.DS_Store
+
+# Real or local-only evidence must never be committed by default.
+evidence/private/
+evidence/screenshots/*.png
+evidence/screenshots/*.jpg
+evidence/screenshots/*.jpeg
+evidence/screenshots/*.gif
+evidence/screenshots/*.pdf
+!evidence/screenshots/.gitkeep
+!evidence/screenshots/README.md
+
+# Common secret and certificate formats.
+.env
+.env.*
+*.pfx
+*.p12
+*.key
+*.pem
+*.cer
+secrets.*
+credentials.*

@@ -1,0 +1,19 @@
+SIMULATED SAMPLE OUTPUT - NOT A PRODUCTION DIRECTORY QUERY
+Related ticket: INC002
+Lab domain: northstar.example
+Captured timestamp: 2026-07-01T14:11:00Z (synthetic)
+
+SamAccountName  : dbrooks
+UserPrincipalName: dbrooks@northstar.example
+Enabled         : True
+LockedOut       : True
+PasswordExpired : False
+
+Tier 1 interpretation:
+- Identity verification completed under the fictional lab process.
+- Account was locked rather than disabled or expired.
+- Caller reported a saved VPN credential following a password change.
+- Remove/update the stale credential before an authorized unlock.
+
+Secrets recorded: none
+State-changing command represented by this file: none

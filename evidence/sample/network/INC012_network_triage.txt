@@ -1,0 +1,23 @@
+SIMULATED SAMPLE OUTPUT - NOT A LIVE NETWORK CAPTURE
+Related ticket: INC012
+Captured timestamp: 2026-07-08T14:21:00Z (synthetic)
+
+ComputerName : NS-LT-002
+Interface    : Wi-Fi
+IPv4Address : 192.0.2.12
+Gateway     : 192.0.2.1
+DnsServers  : 203.0.113.53
+
+CHECK                         RESULT
+Default gateway reachable     PASS
+Documentation IP reachable    PASS
+internal.northstar.example    FAIL - no DNS answer
+TCP 443 by documentation IP   PASS
+
+Tier 1 interpretation:
+- Local adapter and IP path were working.
+- The failure was specific to name resolution.
+- Adapter used the wrong synthetic DNS server for the lab zone.
+- After restoring the approved lab DNS setting, repeat name resolution and the original application test.
+
+State-changing command represented by this file: none
