@@ -10,8 +10,8 @@
 | First-contact resolutions | 26 (65.0%) |
 | Escalations | 8 (20.0%) |
 | Records meeting response and resolution targets | 37 (92.5%) |
-| Average first response | 19 min |
-| Median first response | 16 min |
+| Average first response | 18.7 min |
+| Median first response | 16.5 min |
 | Average resolution | 13.0 hr |
 | Median resolution | 1.1 hr |
 
