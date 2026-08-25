@@ -92,4 +92,5 @@ jobs:
       - name: Create commit-exact archive and checksum
         run: python tools/labtool.py package
       - name: Verify archive integrity
-        run: python -c "import glob, zipfile; archive=glob.glob('dist/*.zip')[0]; result=zipfile.ZipFile(archive).testzip(); assert result is None, result; print(f'Archive verified: {archive}')"
+        run: |
+          python -c "import glob, zipfile; archive=glob.glob('dist/*.zip')[0]; result=zipfile.ZipFile(archive).testzip(); assert result is None, result; print(f'Archive verified: {archive}')"
