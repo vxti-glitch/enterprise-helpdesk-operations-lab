@@ -17,6 +17,7 @@ param(
     [ValidateSet('Query', 'Unlock', 'ResetPassword', 'Enable', 'Disable', 'AddGroup', 'RemoveGroup')]
     [string]$Action = 'Query',
 
+    [ValidatePattern('^[A-Za-z0-9][A-Za-z0-9._ -]{0,63}$')]
     [string]$GroupName,
 
     [ValidatePattern('^(?:INC|REQ)\d{3}$')]
@@ -47,13 +48,17 @@ if ($Action -in @('AddGroup', 'RemoveGroup') -and [string]::IsNullOrWhiteSpace($
     throw "-GroupName is required for action '$Action'."
 }
 
-$privateEvidenceRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..\evidence\private'))
-$fullAuditPath = [System.IO.Path]::GetFullPath($AuditPath)
-if (-not ($fullAuditPath.StartsWith($privateEvidenceRoot, [System.StringComparison]::OrdinalIgnoreCase))) {
-    throw 'Safety stop: audit output must remain under evidence/private/.'
-}
+$privateEvidenceRoot = Join-Path $PSScriptRoot '..\..\evidence\private'
+$fullAuditPath = Resolve-NorthstarLabChildPath -CandidatePath $AuditPath -RootPath $privateEvidenceRoot
 
-$allowedGroupNames = @(Import-Csv -LiteralPath (Join-Path $PSScriptRoot '..\..\data\ad_groups.csv') | Select-Object -ExpandProperty group_name)
+$allowedGroupNames = @(
+    Import-Csv -LiteralPath (Join-Path $PSScriptRoot '..\..\data\ad_groups.csv') | ForEach-Object {
+        if ([string]::IsNullOrWhiteSpace($_.group_name) -or $_.group_name -notmatch '^[A-Za-z0-9][A-Za-z0-9._ -]{0,63}$') {
+            throw "Safety stop: ad_groups.csv contains an invalid lab group name '$($_.group_name)'."
+        }
+        $_.group_name
+    }
+)
 $group = $null
 if ($Action -in @('AddGroup', 'RemoveGroup')) {
     $group = Get-NorthstarLabGroup -GroupName $GroupName -Context $context -AllowedGroupNames $allowedGroupNames

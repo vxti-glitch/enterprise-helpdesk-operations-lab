@@ -16,6 +16,27 @@ function Test-NorthstarDescendant {
     return $DistinguishedName -ieq $AncestorDn -or $DistinguishedName.EndsWith(",$AncestorDn", [System.StringComparison]::OrdinalIgnoreCase)
 }
 
+function Resolve-NorthstarLabChildPath {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$CandidatePath,
+        [Parameter(Mandatory)][string]$RootPath
+    )
+
+    $root = [System.IO.Path]::GetFullPath($RootPath).TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
+    $candidate = [System.IO.Path]::GetFullPath($CandidatePath)
+    $relative = [System.IO.Path]::GetRelativePath($root, $candidate)
+    $parentPrefix = "..$([System.IO.Path]::DirectorySeparatorChar)"
+    if (
+        $relative -eq '..' -or
+        $relative.StartsWith($parentPrefix, [System.StringComparison]::Ordinal) -or
+        [System.IO.Path]::IsPathRooted($relative)
+    ) {
+        throw "Safety stop: path '$CandidatePath' must remain under '$root'."
+    }
+    return $candidate
+}
+
 function Assert-NorthstarDomain {
     [CmdletBinding()]
     param()
@@ -151,4 +172,4 @@ function Write-NorthstarLabAudit {
     } | ConvertTo-Json -Compress | Add-Content -LiteralPath $auditFile -Encoding UTF8
 }
 
-Export-ModuleMember -Function Assert-NorthstarDomain, Get-NorthstarLabContext, Assert-NorthstarLabUser, Get-NorthstarLabUser, Assert-NorthstarLabGroup, Get-NorthstarLabGroup, Write-NorthstarLabAudit, Test-NorthstarDescendant
+Export-ModuleMember -Function Assert-NorthstarDomain, Get-NorthstarLabContext, Assert-NorthstarLabUser, Get-NorthstarLabUser, Assert-NorthstarLabGroup, Get-NorthstarLabGroup, Write-NorthstarLabAudit, Test-NorthstarDescendant, Resolve-NorthstarLabChildPath
