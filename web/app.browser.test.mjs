@@ -68,7 +68,7 @@ test("new routes begin at the heading instead of a retained queue scroll positio
 
 test("timeline markers align to the guide and leave room before every event label", async ({ page }) => {
   const errors = collectConsoleErrors(page);
-  for (const ticketId of ["INC009", "INC012"]) {
+  for (const ticketId of ["INC009", "INC012", "INC033"]) {
     await page.goto(`/#/tickets/${ticketId}`);
     const measurements = await page.locator(".timeline li").evaluateAll((items) => {
       const timeline = document.querySelector(".timeline");
@@ -89,7 +89,7 @@ test("timeline markers align to the guide and leave room before every event labe
     });
     expect(measurements).not.toHaveLength(0);
     for (const measurement of measurements) {
-      expect(measurement.labelGap).toBeGreaterThanOrEqual(5);
+      expect(measurement.labelGap).toBeGreaterThanOrEqual(7);
       expect(Math.abs(measurement.markerToGuide)).toBeLessThanOrEqual(1);
     }
   }

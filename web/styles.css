@@ -123,9 +123,9 @@ dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 .detail-top { align-items: start; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; }
 .detail-top h1 { font-size: clamp(1.65rem, 3vw, 2.45rem); margin-top: .25rem; }
 .detail-grid { display: grid; gap: 1rem; grid-template-columns: minmax(0, 1.35fr) minmax(0, .65fr); }
-.timeline { list-style: none; margin: 0; padding: 1rem 1rem 1rem 2rem; position: relative; }
-.timeline::before { background: #aac4e4; bottom: 1.2rem; content: ""; left: calc(2.325rem + 4px); position: absolute; top: 1.25rem; width: 2px; }
-.timeline li { padding: 0 0 1rem 1.4rem; position: relative; }
+.timeline { --timeline-gutter: 2rem; --timeline-marker-diameter: calc(.65rem + 6px); --timeline-marker-radius: calc(.325rem + 3px); --timeline-label-gap: .45rem; list-style: none; margin: 0; padding: 1rem 1rem 1rem var(--timeline-gutter); position: relative; }
+.timeline::before { background: #aac4e4; bottom: 1.2rem; content: ""; left: calc(var(--timeline-gutter) + var(--timeline-marker-radius) + 1px); position: absolute; top: 1.25rem; width: 2px; }
+.timeline li { padding: 0 0 1rem calc(var(--timeline-marker-diameter) + var(--timeline-label-gap)); position: relative; }
 .timeline li::before { background: var(--blue); border: 3px solid #e9f2ff; border-radius: 100%; content: ""; height: .65rem; left: 0; position: absolute; top: .35rem; width: .65rem; }
 .timeline time { color: var(--muted); display: block; font-family: ui-monospace, monospace; font-size: .78rem; }
 .narrative { display: grid; gap: 1rem; }
