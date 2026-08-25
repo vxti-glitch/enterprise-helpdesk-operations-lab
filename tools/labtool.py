@@ -22,9 +22,10 @@ import subprocess
 import sys
 import tempfile
 import webbrowser
+import zipfile
 from collections import Counter, defaultdict
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
 from typing import Iterable
@@ -67,7 +68,8 @@ TICKET_FIELDS = (
     "category",
     "subcategory",
     "assignment_group",
-    "state",
+    "resolution_state",
+    "final_state",
     "resolution_code",
     "escalated",
     "first_contact_resolution",
@@ -131,6 +133,7 @@ PRIORITY_MATRIX_FIELDS = ("impact", "urgency", "priority", "policy_note")
 REQUEST_ITEM_FIELDS = (
     "request_id",
     "request_item_id",
+    "requested_by_user_id",
     "requested_for_user_id",
     "requested_service",
     "approval_state",
@@ -158,20 +161,25 @@ STRICT_BASELINE = {
 }
 
 FORBIDDEN_MARKERS = (
-    "@gmail.com",
-    "@outlook.com",
-    "@yahoo.com",
-    "password=",
-    "api_key=",
-    "aws_secret_access_key",
-    "ghp_",
-    "github_pat_",
+    "@gmail.com",  # marker-scan: allow definition
+    "@outlook.com",  # marker-scan: allow definition
+    "@yahoo.com",  # marker-scan: allow definition
+    "password=",  # marker-scan: allow definition
+    "api_key=",  # marker-scan: allow definition
+    "aws_secret_access_key",  # marker-scan: allow definition
+    "ghp_",  # marker-scan: allow definition
+    "github_pat_",  # marker-scan: allow definition
 )
 TEXT_EXTENSIONS = {
     ".csv",
     ".md",
     ".py",
     ".ps1",
+    ".psm1",
+    ".mjs",
+    ".toml",
+    ".ini",
+    ".conf",
     ".yml",
     ".yaml",
     ".json",
@@ -180,6 +188,10 @@ TEXT_EXTENSIONS = {
     ".css",
     ".js",
 }
+
+REQUEST_ITEM_STATES = {"Closed Complete"}
+REQUEST_TASK_STATES = {"Closed Complete"}
+REQUEST_APPROVAL_STATES = {"Approved"}
 
 
 @dataclass(frozen=True)
@@ -216,6 +228,8 @@ def parse_utc(value: str) -> datetime:
     parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     if parsed.tzinfo is None:
         raise ValueError("timestamp must include a UTC offset or Z suffix")
+    if parsed.utcoffset() != timedelta(0):
+        raise ValueError("timestamp must use UTC (Z or +00:00)")
     return parsed
 
 
@@ -231,8 +245,9 @@ def minutes_between(start: datetime, end: datetime) -> float:
 
 
 def format_minutes(value: float) -> str:
+    rendered = f"{value:.1f}" if value % 1 else f"{value:.0f}"
     if value < 60:
-        return f"{value:.0f} min"
+        return f"{rendered} min"
     hours = value / 60.0
     if hours < 48:
         return f"{hours:.1f} hr"
@@ -351,14 +366,23 @@ def event_models(
                 f"{ticket_id}: requires exactly one Opened, Acknowledged, Resolved, and Closed event"
             )
             continue
-        opened, acknowledged, resolved, closed = (
-            by_type[event_type][0][0]
+        opened_event, acknowledged_event, resolved_event, closed_event = (
+            by_type[event_type][0]
             for event_type in ("Opened", "Acknowledged", "Resolved", "Closed")
+        )
+        opened, acknowledged, resolved, closed = (
+            opened_event[0],
+            acknowledged_event[0],
+            resolved_event[0],
+            closed_event[0],
         )
         if not opened <= acknowledged <= resolved <= closed:
             errors.append(
                 f"{ticket_id}: event timeline must be opened <= acknowledged <= resolved <= closed"
             )
+            continue
+        if parsed[-1][1]["event_id"] != closed_event[1]["event_id"]:
+            errors.append(f"{ticket_id}: Closed must be the final canonical event")
             continue
         if ticket["priority"] not in targets:
             errors.append(f"{ticket_id}: unknown SLA priority {ticket['priority']!r}")
@@ -391,6 +415,9 @@ def event_models(
             "response_met": response_minutes <= response_target,
             "resolution_met": resolution_minutes <= resolution_target,
             "reopened": bool(by_type["Reopened"]),
+            "resolution_state": resolved_event[1]["state"],
+            "final_state": closed_event[1]["state"],
+            "final_assignment_group": closed_event[1]["assignment_group"],
         }
     return models
 
@@ -477,7 +504,11 @@ def calculate_metrics(
 def validate_markdown_links(errors: list[str]) -> None:
     pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
     for markdown_path in ROOT.rglob("*.md"):
-        if any(part in {".git", "dist", "__pycache__"} for part in markdown_path.parts):
+        if any(
+            part
+            in {".git", "dist", "__pycache__", "node_modules", "playwright-report", "test-results"}
+            for part in markdown_path.parts
+        ):
             continue
         for raw_target in pattern.findall(markdown_path.read_text(encoding="utf-8")):
             target = raw_target.strip().strip("<>").split("#", 1)[0]
@@ -503,14 +534,18 @@ def validate_secret_markers(errors: list[str]) -> None:
         tracked = [str(path.relative_to(ROOT)) for path in ROOT.rglob("*") if path.is_file()]
     for name in tracked:
         path = ROOT / name
-        if path.resolve() == Path(__file__).resolve():
+        if not path.is_file() or (path.suffix.lower() not in TEXT_EXTENSIONS and path.suffix):
             continue
-        if path.suffix.lower() not in TEXT_EXTENSIONS or not path.is_file():
+        content = path.read_text(encoding="utf-8", errors="ignore")
+        if "\x00" in content:
             continue
-        content = path.read_text(encoding="utf-8", errors="ignore").lower()
-        for marker in FORBIDDEN_MARKERS:
-            if marker in content:
-                errors.append(f"Potential personal or secret marker {marker!r} in {name}")
+        for line_number, line in enumerate(content.splitlines(), start=1):
+            normalized = line.lower()
+            for marker in FORBIDDEN_MARKERS:
+                if marker in normalized and "marker-scan: allow definition" not in normalized:
+                    errors.append(
+                        f"Potential personal or secret marker {marker!r} in {name}:{line_number}"
+                    )
 
 
 def validate_evidence_path(ticket_id: str, value: str, errors: list[str]) -> None:
@@ -526,6 +561,12 @@ def validate_evidence_path(ticket_id: str, value: str, errors: list[str]) -> Non
         errors.append(f"{ticket_id}: evidence_ref escapes evidence/: {value}")
     elif not candidate.is_file():
         errors.append(f"{ticket_id}: evidence_ref does not exist: {value}")
+    elif is_within(candidate, ROOT / "evidence" / "screenshots" / "lab-executed"):
+        manifest = ROOT / "evidence" / "manifests" / f"{candidate.stem}.md"
+        if not manifest.is_file() or "LAB-EXECUTED" not in manifest.read_text(encoding="utf-8"):
+            errors.append(
+                f"{ticket_id}: LAB-EXECUTED screenshot evidence requires a matching manifest under evidence/manifests/"
+            )
 
 
 def validate(strict_baseline: bool = False) -> list[str]:
@@ -536,8 +577,20 @@ def validate(strict_baseline: bool = False) -> list[str]:
     ad_groups, resolver_groups = data["ad_groups"], data["resolver_groups"]
     targets_rows, matrix_rows = data["sla_targets"], data["priority_matrix"]
     request_items, request_tasks = data["request_items"], data["request_tasks"]
+    request_items, request_tasks = data["request_items"], data["request_tasks"]
     if not all(
-        (tickets, events, users, assets, ad_groups, resolver_groups, targets_rows, matrix_rows)
+        (
+            tickets,
+            events,
+            users,
+            assets,
+            ad_groups,
+            resolver_groups,
+            targets_rows,
+            matrix_rows,
+            request_items,
+            request_tasks,
+        )
     ):
         validate_markdown_links(errors)
         validate_secret_markers(errors)
@@ -561,7 +614,8 @@ def validate(strict_baseline: bool = False) -> list[str]:
                 "priority",
                 "category",
                 "assignment_group",
-                "state",
+                "resolution_state",
+                "final_state",
                 "evidence_ref",
             ),
         ),
@@ -587,6 +641,8 @@ def validate(strict_baseline: bool = False) -> list[str]:
         ("data/resolver_groups.csv", resolver_groups, RESOLVER_GROUP_FIELDS),
         ("data/sla_targets.csv", targets_rows, SLA_FIELDS),
         ("data/priority_matrix.csv", matrix_rows, PRIORITY_MATRIX_FIELDS),
+        ("data/request_items.csv", request_items, REQUEST_ITEM_FIELDS),
+        ("data/request_tasks.csv", request_tasks, REQUEST_TASK_FIELDS),
     ):
         validate_required_values(source, rows, fields, errors)
     for source, rows, field in (
@@ -596,6 +652,7 @@ def validate(strict_baseline: bool = False) -> list[str]:
         ("data/assets.csv", assets, "asset_id"),
         ("data/ad_groups.csv", ad_groups, "group_name"),
         ("data/resolver_groups.csv", resolver_groups, "name"),
+        ("data/request_items.csv", request_items, "request_id"),
         ("data/request_items.csv", request_items, "request_item_id"),
         ("data/request_tasks.csv", request_tasks, "task_id"),
     ):
@@ -612,10 +669,64 @@ def validate(strict_baseline: bool = False) -> list[str]:
     matrix = {(row["impact"], row["urgency"]): row["priority"] for row in matrix_rows}
     resolver_names = {row["name"] for row in resolver_groups}
     kb_ids = {path.name[:5] for path in KB.glob("KB[0-9][0-9][0-9]-*.md")}
-    request_item_by_request, task_item_ids = (
-        index_by(request_items, "request_id"),
-        {row["request_item_id"] for row in request_tasks},
-    )
+    request_items_by_request: dict[str, list[dict[str, str]]] = defaultdict(list)
+    tasks_by_item: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for item in request_items:
+        request_items_by_request[item["request_id"]].append(item)
+    for task in request_tasks:
+        tasks_by_item[task["request_item_id"]].append(task)
+
+    for item in request_items:
+        request_id, item_id = item["request_id"], item["request_item_id"]
+        if not TICKET_ID_RE.fullmatch(request_id) or not request_id.startswith("REQ"):
+            errors.append(f"{item_id}: request_id must match a Service Request REQ###")
+        if not re.fullmatch(r"^RITM\d{3}$", item_id):
+            errors.append(f"{item_id or '<blank>'}: request_item_id must match RITM###")
+        for field in ("requested_by_user_id", "requested_for_user_id"):
+            if item[field] not in users_by_id:
+                errors.append(f"{item_id}: {field} must resolve to a fictional user")
+        if item["fulfillment_group"] not in resolver_names:
+            errors.append(f"{item_id}: fulfillment_group uses unknown resolver group")
+        if item["approval_state"] not in REQUEST_APPROVAL_STATES:
+            errors.append(f"{item_id}: invalid approval_state {item['approval_state']!r}")
+        if item["state"] not in REQUEST_ITEM_STATES:
+            errors.append(f"{item_id}: invalid request item state {item['state']!r}")
+        if not item["requested_service"].strip():
+            errors.append(f"{item_id}: requested_service must not be blank")
+        if request_id not in ticket_ids:
+            errors.append(f"{item_id}: orphan request item references unknown {request_id}")
+
+    for task in request_tasks:
+        task_id, item_id = task["task_id"], task["request_item_id"]
+        if not re.fullmatch(r"^SCTASK\d{3}$", task_id):
+            errors.append(f"{task_id or '<blank>'}: task_id must match SCTASK###")
+        if item_id not in {item["request_item_id"] for item in request_items}:
+            errors.append(f"{task_id}: orphan request task references unknown {item_id}")
+        if task["assignment_group"] not in resolver_names:
+            errors.append(f"{task_id}: assignment_group uses unknown resolver group")
+        if task["state"] not in REQUEST_TASK_STATES:
+            errors.append(f"{task_id}: invalid request task state {task['state']!r}")
+        try:
+            sequence = int(task["sequence"])
+            if sequence < 1:
+                raise ValueError
+        except ValueError:
+            errors.append(f"{task_id}: sequence must be a positive integer")
+        if not task["task_summary"].strip():
+            errors.append(f"{task_id}: task_summary must not be blank")
+    for item_id, item_tasks in tasks_by_item.items():
+        sequences: list[int] = []
+        for task in item_tasks:
+            try:
+                sequences.append(int(task["sequence"]))
+            except ValueError:
+                continue
+        if len(sequences) != len(set(sequences)):
+            errors.append(f"{item_id}: duplicate request task sequence values")
+        if sequences and sorted(sequences) != list(range(1, len(sequences) + 1)):
+            errors.append(f"{item_id}: task sequences must be contiguous starting at 1")
+
+    boolean_values: dict[str, dict[str, bool]] = {}
     for ticket in tickets:
         ticket_id = ticket["ticket_id"]
         if not TICKET_ID_RE.fullmatch(ticket_id):
@@ -652,22 +763,26 @@ def validate(strict_baseline: bool = False) -> list[str]:
         if ticket["kb_reference"] != "none" and ticket["kb_reference"] not in kb_ids:
             errors.append(f"{ticket_id}: references missing KB {ticket['kb_reference']!r}")
         if ticket["type"] == "Service Request":
-            item = request_item_by_request.get(ticket_id)
-            if not item:
+            items = request_items_by_request.get(ticket_id, [])
+            if len(items) != 1:
                 errors.append(f"{ticket_id}: Service Request requires a request_items.csv record")
-            elif item["requested_for_user_id"] not in users_by_id:
-                errors.append(
-                    f"{ticket_id}: request item requested_for_user_id must resolve to a fictional user"
-                )
-            elif item["fulfillment_group"] not in resolver_names:
-                errors.append(f"{ticket_id}: request item uses unknown fulfillment group")
-            elif item["request_item_id"] not in task_item_ids:
-                errors.append(f"{ticket_id}: request item requires at least one request task")
-        try:
-            truthy(ticket["escalated"])
-            truthy(ticket["first_contact_resolution"])
-        except ValueError as exc:
-            errors.append(f"{ticket_id}: {exc}")
+            else:
+                item = items[0]
+                if item["requested_for_user_id"] != ticket["caller_id"]:
+                    errors.append(
+                        f"{ticket_id}: requested_for_user_id must match the record beneficiary/caller_id"
+                    )
+                if not tasks_by_item.get(item["request_item_id"]):
+                    errors.append(f"{ticket_id}: request item requires at least one request task")
+        elif request_items_by_request.get(ticket_id):
+            errors.append(f"{ticket_id}: Incident records cannot have request item relationships")
+        values: dict[str, bool] = {}
+        for field in ("escalated", "first_contact_resolution"):
+            try:
+                values[field] = truthy(ticket[field])
+            except ValueError as exc:
+                errors.append(f"{ticket_id}: {field}: {exc}")
+        boolean_values[ticket_id] = values
         validate_evidence_path(ticket_id, ticket["evidence_ref"], errors)
     valid_upns = {user["user_principal_name"] for user in users}
     for user in users:
@@ -715,6 +830,8 @@ def validate(strict_baseline: bool = False) -> list[str]:
             )
         if event["visibility"] not in {"Public", "Internal"}:
             errors.append(f"{event['event_id']}: visibility must be Public or Internal")
+        if not event["state"].strip() or not event["event_type"].strip():
+            errors.append(f"{event['event_id']}: event_type and state must not be blank")
         try:
             parse_utc(event["occurred_at"])
         except ValueError as exc:
@@ -735,15 +852,30 @@ def validate(strict_baseline: bool = False) -> list[str]:
                         )
                 except ValueError as exc:
                     errors.append(f"{ticket['ticket_id']}: invalid {field}: {exc}")
-            if truthy(ticket["escalated"]) != bool(model["escalated"]):
+            values = boolean_values[ticket["ticket_id"]]
+            if values.get("escalated") is not None and values["escalated"] != bool(
+                model["escalated"]
+            ):
                 errors.append(
                     f"{ticket['ticket_id']}: escalated summary field differs from event history"
                 )
-            if truthy(ticket["first_contact_resolution"]) != bool(
-                model["first_contact_resolution"]
-            ):
+            if values.get("first_contact_resolution") is not None and values[
+                "first_contact_resolution"
+            ] != bool(model["first_contact_resolution"]):
                 errors.append(
                     f"{ticket['ticket_id']}: first_contact_resolution summary field differs from event history"
+                )
+            if ticket["resolution_state"] != model["resolution_state"]:
+                errors.append(
+                    f"{ticket['ticket_id']}: resolution_state must match the Resolved event state"
+                )
+            if ticket["final_state"] != model["final_state"]:
+                errors.append(
+                    f"{ticket['ticket_id']}: final_state must match the final Closed event"
+                )
+            if ticket["assignment_group"] != model["final_assignment_group"]:
+                errors.append(
+                    f"{ticket['ticket_id']}: final resolver group must match the final event assignment group"
                 )
         metrics = calculate_metrics(tickets, models)
         if strict_baseline:
@@ -819,7 +951,8 @@ def ticket_markdown(ticket: dict[str, str], model: dict[str, object]) -> str:
 | Category | {markdown_escape(ticket['category'])} / {markdown_escape(ticket['subcategory'])} |
 | Impact / urgency / priority | {markdown_escape(ticket['impact'])} / {markdown_escape(ticket['urgency'])} / {markdown_escape(ticket['priority'])} |
 | Final resolver group | {markdown_escape(ticket['assignment_group'])} |
-| Final state | {markdown_escape(ticket['state'])} - {markdown_escape(ticket['resolution_code'])} |
+| Resolution state | {markdown_escape(ticket['resolution_state'])} - {markdown_escape(ticket['resolution_code'])} |
+| Final state | {markdown_escape(ticket['final_state'])} |
 | Event-derived escalation | {model['escalated']} |
 | Event-derived first-contact resolution | {model['first_contact_resolution']} |
 | KB reference | {markdown_escape(ticket['kb_reference'])} |
@@ -943,6 +1076,7 @@ def service_now_staging(tickets: list[dict[str, str]], record_type: str) -> str:
         "category",
         "subcategory",
         "final_resolver_group",
+        "resolution_state",
         "final_state",
         "opened_at_utc",
         "resolved_at_utc",
@@ -963,7 +1097,8 @@ def service_now_staging(tickets: list[dict[str, str]], record_type: str) -> str:
             "category": ticket["category"],
             "subcategory": ticket["subcategory"],
             "final_resolver_group": ticket["assignment_group"],
-            "final_state": ticket["state"],
+            "resolution_state": ticket["resolution_state"],
+            "final_state": ticket["final_state"],
             "opened_at_utc": ticket["opened_at"],
             "resolved_at_utc": ticket["resolved_at"],
             "u_asset_id": ticket["asset_id"],
@@ -987,6 +1122,7 @@ def kb_index() -> list[dict[str, str]]:
             ),
             path.stem,
         )
+        title = re.sub(r"^KB\d{3}\s*[-—:]\s*", "", title)
         articles.append(
             {
                 "id": path.name[:5],
@@ -1015,6 +1151,8 @@ def console_payload(
                 "resolution_minutes": round(float(model["resolution_minutes"]), 1),
                 "response_met": model["response_met"],
                 "resolution_met": model["resolution_met"],
+                "response_target_minutes": model["response_target_minutes"],
+                "resolution_target_minutes": model["resolution_target_minutes"],
                 "sla_met": bool(model["response_met"]) and bool(model["resolution_met"]),
                 "event_derived_escalated": model["escalated"],
                 "event_derived_fcr": model["first_contact_resolution"],
@@ -1022,7 +1160,10 @@ def console_payload(
             }
         )
         ticket["request_tasks"] = (
-            tasks_by_item[ticket["request_item"]["request_item_id"]]
+            sorted(
+                tasks_by_item[ticket["request_item"]["request_item_id"]],
+                key=lambda task: int(task["sequence"]),
+            )
             if ticket["request_item"]
             else []
         )
@@ -1058,6 +1199,13 @@ def console_payload(
         "assets": inventory,
         "kb": kb_index(),
         "resolver_groups": data["resolver_groups"],
+        "sla_targets": {
+            row["priority"]: {
+                "response_target_minutes": int(row["response_target_minutes"]),
+                "resolution_target_minutes": int(row["resolution_target_minutes"]),
+            }
+            for row in data["sla_targets"]
+        },
         "ad_groups": data["ad_groups"],
         "featured_ticket_ids": ["INC002", "INC009", "INC012", "INC040"],
         "intentional_miss_explanations": {
@@ -1224,10 +1372,14 @@ def command_validate(strict_baseline: bool) -> int:
 
 def command_serve(port: int, open_browser: bool) -> int:
     errors = validate(False)
+    if not errors:
+        validate_generated_artifacts(errors, False)
     if errors:
-        print("Cannot serve an invalid lab:", file=sys.stderr)
+        print("Cannot serve an invalid or stale lab:", file=sys.stderr)
         for error in errors:
             print(f"- {error}", file=sys.stderr)
+        if any("Generated artifact is" in error for error in errors):
+            print("Regenerate first: python tools\\labtool.py generate", file=sys.stderr)
         return 1
     web_root = ROOT / "web"
     if not web_root.is_dir():
@@ -1250,6 +1402,62 @@ def command_serve(port: int, open_browser: bool) -> int:
     finally:
         server.server_close()
     return 0
+
+
+def verify_archive_layout(output: Path) -> list[str]:
+    """Return archive-layout errors for the commit-exact distributable ZIP."""
+    prefix = "enterprise-helpdesk-operations-lab/"
+    forbidden_prefixes = (".git/", "evidence/private/", "__pycache__/")
+    errors: list[str] = []
+    try:
+        with zipfile.ZipFile(output) as archive:
+            corrupt = archive.testzip()
+            if corrupt:
+                errors.append(f"archive CRC failure in {corrupt}")
+            names = [name for name in archive.namelist() if not name.endswith("/")]
+            manifests = {
+                name.removeprefix(prefix): archive.read(name).decode("utf-8", errors="ignore")
+                for name in names
+                if name.startswith(f"{prefix}evidence/manifests/")
+            }
+    except (OSError, zipfile.BadZipFile) as exc:
+        return [f"cannot read ZIP: {exc}"]
+    if not names:
+        errors.append("archive is empty")
+        return errors
+    if any(not name.startswith(prefix) for name in names):
+        errors.append(
+            "archive entries must be contained beneath enterprise-helpdesk-operations-lab/"
+        )
+    relative_names = [name.removeprefix(prefix) for name in names if name.startswith(prefix)]
+    evidence_pattern = re.compile(
+        r"^evidence/screenshots/(.+)\.(?:png|jpe?g|gif|webp|svg|tiff?|pdf)$", re.I
+    )
+    for name in relative_names:
+        if name.startswith(forbidden_prefixes):
+            errors.append(f"archive includes forbidden path: {name}")
+        match = evidence_pattern.fullmatch(name)
+        if match and not name.startswith("evidence/screenshots/application/"):
+            if not name.startswith("evidence/screenshots/lab-executed/"):
+                errors.append(f"archive includes unapproved evidence image: {name}")
+                continue
+            manifest = manifests.get(f"evidence/manifests/{Path(name).stem}.md", "")
+            if "LAB-EXECUTED" not in manifest:
+                errors.append(
+                    f"archive includes LAB-EXECUTED image without approved manifest: {name}"
+                )
+    expected = {
+        "README.md",
+        "LICENSE",
+        "tools/labtool.py",
+        "web/index.html",
+        "web/data/lab.json",
+        "data/tickets.csv",
+    }
+    missing = sorted(expected - set(relative_names))
+    if missing:
+        errors.append(f"archive is missing expected files: {', '.join(missing)}")
+    return errors
 
 
 def command_package(output: Path) -> int:
@@ -1276,7 +1484,15 @@ def command_package(output: Path) -> int:
         return 1
     output.parent.mkdir(parents=True, exist_ok=True)
     archive = subprocess.run(
-        ["git", "archive", "--format=zip", "--output", str(output), "HEAD"],
+        [
+            "git",
+            "archive",
+            "--format=zip",
+            "--prefix=enterprise-helpdesk-operations-lab/",
+            "--output",
+            str(output),
+            "HEAD",
+        ],
         cwd=ROOT,
         text=True,
         capture_output=True,
@@ -1284,10 +1500,20 @@ def command_package(output: Path) -> int:
     if archive.returncode:
         print(f"git archive failed: {archive.stderr}", file=sys.stderr)
         return 1
+    archive_errors = verify_archive_layout(output)
+    if archive_errors:
+        output.unlink(missing_ok=True)
+        print("Package verification failed:", file=sys.stderr)
+        for error in archive_errors:
+            print(f"- {error}", file=sys.stderr)
+        return 1
     checksum = hashlib.sha256(output.read_bytes()).hexdigest()
-    output.with_suffix(output.suffix + ".sha256").write_text(
-        f"{checksum}  {output.name}\n", encoding="ascii"
-    )
+    checksum_path = output.with_suffix(output.suffix + ".sha256")
+    checksum_path.write_text(f"{checksum}  {output.name}\n", encoding="ascii")
+    recorded_checksum = checksum_path.read_text(encoding="ascii").split()[0]
+    if recorded_checksum != hashlib.sha256(output.read_bytes()).hexdigest():
+        print("Package checksum verification failed.", file=sys.stderr)
+        return 1
     print(f"Created {output.relative_to(ROOT)}\nSHA-256: {checksum}")
     return 0
 

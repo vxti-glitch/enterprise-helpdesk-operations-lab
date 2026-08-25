@@ -24,7 +24,7 @@ Tickets + request items + event history ──► Validation ──► Markdown 
 
 | Source | Role |
 |---|---|
-| `data/tickets.csv` | Fictional narrative, classification, relationship, and final-state record metadata |
+| `data/tickets.csv` | Fictional narrative, classification, relationships, resolution state, final closure state, and resolver metadata |
 | `data/ticket_events.csv` | Canonical event history for opened, acknowledged, work-note, assignment, pending, escalation, first-contact resolution, resolution, and closure events |
 | `data/users.csv` / `data/assets.csv` | Stable fictional identities and assets |
 | `data/ad_groups.csv` | Synthetic AD access-group allowlist for the optional lab |
@@ -32,7 +32,7 @@ Tickets + request items + event history ──► Validation ──► Markdown 
 | `data/request_items.csv` / `data/request_tasks.csv` | Fictional request fulfillment, approval, and task relationships |
 | `data/priority_matrix.csv` | Impact/urgency policy used to validate priority selection |
 
-`tools/labtool.py validate` verifies schemas, values, relationships, priority policy, event order, evidence-path containment, known marker patterns, Markdown links, and freshness of all generated artifacts. The strict baseline is optional so learners can customize the dataset while still using generic schema and relationship validation.
+`tools/labtool.py validate` verifies schemas, values, request/task graphs, priority policy, UTC event order, summary-to-event state agreement, evidence-path containment, known marker patterns, Markdown links, and freshness of all generated artifacts. The strict baseline is optional so learners can customize the dataset while still using generic schema and relationship validation.
 
 ## Generated outputs
 
@@ -54,7 +54,7 @@ The AD scripts are intentionally not generic administration tools.
 - Eligible groups must be in `OU=Groups` under the marked root, use the synthetic group marker, and appear in `data/ad_groups.csv`.
 - Protected, administrative, service-account, outside-OU, and unmarked objects are rejected before a mutation cmdlet is reached.
 
-State-changing actions require `-Execute`, a fictional ticket/request ID, `ShouldProcess`, and a secret-free audit line under ignored `evidence/private/`. `-WhatIf` must not prompt for a password.
+State-changing actions require `-Execute`, a fictional ticket/request ID, `ShouldProcess`, a resolved audit path contained under ignored `evidence/private/`, and a secret-free audit line. `-WhatIf` must not prompt for a password.
 
 ## Console boundary
 

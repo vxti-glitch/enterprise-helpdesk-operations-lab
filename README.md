@@ -1,5 +1,10 @@
 # Northstar Help Desk Operations Console
 
+[![Validate portfolio lab](https://github.com/vxti-glitch/enterprise-helpdesk-operations-lab/actions/workflows/validate.yml/badge.svg)](https://github.com/vxti-glitch/enterprise-helpdesk-operations-lab/actions/workflows/validate.yml)
+[![MIT License](https://img.shields.io/github/license/vxti-glitch/enterprise-helpdesk-operations-lab)](LICENSE)
+
+[Open the live simulated demo](https://vxti-glitch.github.io/enterprise-helpdesk-operations-lab/) · [Start the 90-second tour](https://vxti-glitch.github.io/enterprise-helpdesk-operations-lab/#/tour)
+
 > **SIMULATED PORTFOLIO LAB — Historical fictional service-desk data, not production activity or employment results.** Northstar Solutions, its people, assets, cases, timestamps, and metrics are fictional. This repository does not claim employer work, production access, or third-party platform administration.
 
 ![Application view displaying simulated portfolio data](evidence/screenshots/application/overview.png)
@@ -10,7 +15,7 @@ The project is deliberately not a fake production ServiceNow clone. It is a stat
 
 ## Start here — a three-minute reviewer path
 
-1. Run the local console and choose **Start 90-second tour**.
+1. Open the [live simulated console](https://vxti-glitch.github.io/enterprise-helpdesk-operations-lab/) or run the local console, then choose [Start 90-second tour](https://vxti-glitch.github.io/enterprise-helpdesk-operations-lab/#/tour).
 2. Read [INC012](tickets/generated/INC012.md) for a DNS diagnosis, [INC009](tickets/generated/INC009.md) for a security escalation, and [INC040](tickets/generated/INC040.md) for a time-sensitive meeting issue.
 3. Inspect the event-derived [SLA report](docs/metrics/SLA_REPORT.md), then review the [PowerShell safety model](docs/ACTIVE_DIRECTORY_LAB.md).
 4. Use the [demo script](docs/DEMO_SCRIPT.md) to rehearse how to explain the project in an interview.
@@ -34,21 +39,41 @@ The project is deliberately not a fake production ServiceNow clone. It is a stat
 - Live ServiceNow, Active Directory, Microsoft 365, Entra ID, Intune, Autopilot, VPN, or security-console administration.
 - A replacement for a production ITSM tool, security process, approval workflow, or change-control system.
 
-Add `LAB-EXECUTED` evidence only after personally performing a task in an authorized learning lab and redacting the capture. See [the evidence guide](docs/EVIDENCE_GUIDE.md).
+Add `LAB-EXECUTED` evidence only after personally performing a task in an authorized learning lab and redacting the capture. See [the evidence guide](docs/EVIDENCE_GUIDE.md) and [three-case personal-lab roadmap](docs/PERSONAL_LAB_ROADMAP.md).
 
-## Run it locally
+## Run it locally (Windows)
 
-Requirements: Python 3.10+ and, for JavaScript tests only, Node.js 20+.
+You only need Python 3.10+ to view the console. You do **not** need ServiceNow, Active Directory, Microsoft 365, or an internet connection after cloning.
+
+### First time: copy and paste this into PowerShell
+
+Open PowerShell, then paste the whole block. The first line deliberately moves you out of `C:\Windows\System32`, which avoids the permission error that occurs when Git tries to create a project folder there.
 
 ```powershell
+cd "$env:USERPROFILE\Documents"
 git clone https://github.com/vxti-glitch/enterprise-helpdesk-operations-lab.git
-cd enterprise-helpdesk-operations-lab
-python tools/labtool.py generate --strict-baseline
-python tools/labtool.py validate --strict-baseline
-python tools/labtool.py serve
+cd .\enterprise-helpdesk-operations-lab
+python tools\labtool.py generate --strict-baseline
+python tools\labtool.py validate --strict-baseline
+python tools\labtool.py serve --open
 ```
 
-Open the address printed by `serve`, normally `http://127.0.0.1:8000/`. The console uses only the generated local `web/data/lab.json` file and makes no external data request.
+Your browser should open automatically. If it does not, open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) yourself. Keep the PowerShell window open while using the console; press `Ctrl+C` there when you are finished to stop the local server.
+
+### If you already downloaded or cloned the project
+
+Do **not** clone it again. Open PowerShell and run this instead:
+
+```powershell
+cd "$env:USERPROFILE\Documents\enterprise-helpdesk-operations-lab"
+python tools\labtool.py serve --open
+```
+
+If your copy is stored elsewhere, open its folder in File Explorer, click the address bar, type `powershell`, press Enter, and then run `python tools\labtool.py serve --open`.
+
+### If PowerShell says `python` is not recognized
+
+Install Python 3 from the Microsoft Store or [python.org](https://www.python.org/downloads/), reopen PowerShell, then repeat the command. On some Windows installations, replace `python` with `py` in the commands above.
 
 Run the full local check set:
 
@@ -62,6 +87,14 @@ Or run individual checks:
 python -m unittest discover -s tests -v
 node --test web/filters.test.mjs
 Invoke-Pester .\tests\powershell\NorthstarLabGuard.Tests.ps1
+```
+
+Contributors can also run the browser and accessibility regression suite:
+
+```powershell
+npm ci
+npx playwright install chromium
+npm run test:browser
 ```
 
 ## Console views
@@ -97,7 +130,7 @@ schema / relationship / path-containment validation
 
 `data/ticket_events.csv` is the source for acknowledgement, escalation, first-contact resolution, resolution, and closure timing. Summary timestamps and flags in `data/tickets.csv` are checked against the event history; the metrics engine does not trust them as its source of truth.
 
-Read [the architecture](docs/ARCHITECTURE.md) and [data dictionary](docs/DATA_DICTIONARY.md) for precise relationships, limits, and safety controls.
+Read [the architecture](docs/ARCHITECTURE.md), [data dictionary](docs/DATA_DICTIONARY.md), and [engineering notes](docs/ENGINEERING_NOTES.md) for precise relationships, limits, and guarded controls.
 
 ## Active Directory lab safety
 
@@ -113,13 +146,13 @@ See [the AD lab guide](docs/ACTIVE_DIRECTORY_LAB.md) before running a script in 
 
 ## GitHub Pages
 
-The repository includes a Pages deployment workflow. After the branch is merged, enable **Settings → Pages → Build and deployment → GitHub Actions** once. The site is static and deploys only the generated `web/` directory.
+The static console is live at [vxti-glitch.github.io/enterprise-helpdesk-operations-lab](https://vxti-glitch.github.io/enterprise-helpdesk-operations-lab/). The repository includes a GitHub Pages workflow that validates and regenerates the committed console data before publishing only the `web/` directory.
 
 ## Honest resume language
 
 > **Northstar Help Desk Operations Console | Python, PowerShell, ITSM, Windows Support**
 > Built a fictional, event-derived help-desk portfolio lab with a static console for 40 documented incidents and service requests spanning identity, Microsoft 365 concepts, endpoint, networking, inventory, and security triage.
-> Created validated ticket/event data, safe Active Directory lab scripts, knowledge articles, lifecycle workflows, and reproducible simplified SLA reporting; clearly labeled all records and metrics as simulated.
+> Created validated ticket/event data, guarded Active Directory lab scripts, knowledge articles, lifecycle workflows, and reproducible simplified SLA reporting; clearly labeled all records and metrics as simulated.
 
 Use words such as **built**, **modeled**, **simulated**, **lab**, and **documented**. Do not claim to have supported real users or maintained a production SLA.
 

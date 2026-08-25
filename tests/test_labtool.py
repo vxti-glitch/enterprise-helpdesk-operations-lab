@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import importlib.util
+import shutil
 import sys
 import tempfile
 import unittest
 from copy import deepcopy
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -91,6 +93,71 @@ class LabToolTests(unittest.TestCase):
         labtool.validate_evidence_path("INC001", "../../outside.txt", errors)
         self.assertEqual(len(errors), 1)
         self.assertIn("must be a repository-relative path", errors[0])
+
+    def test_utc_parser_rejects_non_utc_and_naive_timestamps(self) -> None:
+        self.assertIsNotNone(labtool.parse_utc("2026-07-01T13:00:00Z"))
+        self.assertIsNotNone(labtool.parse_utc("2026-07-01T13:00:00+00:00"))
+        for value in ("2026-07-01T13:00:00", "2026-07-01T13:00:00-04:00", "not-a-date"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                labtool.parse_utc(value)
+
+    def test_fractional_minute_display_is_consistent(self) -> None:
+        self.assertEqual(labtool.format_minutes(16.5), "16.5 min")
+        metric_copy = deepcopy(self.metrics)
+        metric_copy["median_response_minutes"] = 16.5
+        self.assertIn("| Median first response | 16.5 min |", labtool.metrics_markdown(metric_copy))
+
+    def test_console_payload_includes_data_driven_sla_targets(self) -> None:
+        models = deepcopy(self.models)
+        models["INC001"]["response_target_minutes"] = 19
+        models["INC001"]["resolution_target_minutes"] = 111
+        payload = labtool.console_payload(self.data, models, self.metrics)
+        ticket = next(item for item in payload["tickets"] if item["ticket_id"] == "INC001")
+        self.assertEqual(ticket["response_target_minutes"], 19)
+        self.assertEqual(ticket["resolution_target_minutes"], 111)
+        self.assertEqual(payload["sla_targets"]["P3"]["response_target_minutes"], 240)
+
+    def test_invalid_boolean_returns_validation_errors_without_traceback(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture_data = Path(directory) / "data"
+            shutil.copytree(ROOT / "data", fixture_data)
+            tickets_path = fixture_data / "tickets.csv"
+            content = tickets_path.read_text(encoding="utf-8")
+            tickets_path.write_text(
+                content.replace('"false","true","KB001"', '"not-a-bool","true","KB001"', 1),
+                encoding="utf-8",
+            )
+            with mock.patch.object(labtool, "DATA", fixture_data):
+                errors = labtool.validate(strict_baseline=True)
+        self.assertTrue(
+            any("INC001: escalated: expected true or false" in error for error in errors)
+        )
+
+    def test_request_graph_rejects_orphan_and_noncontiguous_tasks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            fixture_data = Path(directory) / "data"
+            shutil.copytree(ROOT / "data", fixture_data)
+            task_path = fixture_data / "request_tasks.csv"
+            content = task_path.read_text(encoding="utf-8")
+            content = content.replace('"RITM001","SCTASK002","2"', '"RITM999","SCTASK002","3"', 1)
+            task_path.write_text(content, encoding="utf-8")
+            with mock.patch.object(labtool, "DATA", fixture_data):
+                errors = labtool.validate()
+        self.assertTrue(any("orphan request task" in error for error in errors))
+        self.assertTrue(any("task sequences must be contiguous" in error for error in errors))
+
+    def test_serve_refuses_stale_generated_artifacts(self) -> None:
+        with (
+            mock.patch.object(labtool, "validate", return_value=[]),
+            mock.patch.object(
+                labtool,
+                "validate_generated_artifacts",
+                side_effect=lambda errors, _: errors.append(
+                    "Generated artifact is stale: web/data/lab.json; run labtool.py generate"
+                ),
+            ),
+        ):
+            self.assertEqual(labtool.command_serve(0, False), 1)
 
     def test_generator_refuses_output_outside_allowed_directories(self) -> None:
         with self.assertRaises(labtool.LabDataError):
