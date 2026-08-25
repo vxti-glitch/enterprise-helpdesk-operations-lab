@@ -19,6 +19,6 @@ This is a public portfolio simulation. Do not submit real operational data in an
 
 ## Script safeguards
 
-AD-changing scripts in this repository require `-Execute`, support `-WhatIf`, and verify the exact lab DNS root. Review every planned change first. These safeguards reduce risk; they do not replace backups, authorization, or an isolated lab.
+AD-changing scripts in this repository require `-Execute`, a fictional ticket/request ID, and `ShouldProcess`; they support `-WhatIf` without prompting for a password. They are fixed to `northstar.example`, require a sentinel-marked `OU=Northstar Lab`, and reject out-of-scope, protected, administrative, service-account, unmarked, and non-allowlisted group targets. Review every planned change first. These safeguards reduce risk; they do not replace backups, authorization, or an isolated lab.
 
 For a sensitive accidental commit, rotate the exposed credential first, then remove it from Git history and GitHub according to your organization's process.

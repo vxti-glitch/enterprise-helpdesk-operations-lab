@@ -1,12 +1,16 @@
-# Synthetic lab data
+# Fictional source data
 
-Every row in this directory is fictional portfolio data.
+Every CSV in this directory uses fictional people, reserved `northstar.example` identities, synthetic serials, and RFC 5737 documentation IP addresses.
 
-- `users.csv`: 15 recurring fictional identities using `northstar.example`.
-- `assets.csv`: 20 fictional Windows devices with `SYN-` serial markers and RFC 5737 addresses.
-- `groups.csv`: Proposed lab security groups and fictional owners.
-- `sla_targets.csv`: Simplified elapsed-minute response and resolution targets.
-- `tickets.csv`: Canonical source for 40 incident/request records.
-- `servicenow_import/incidents.csv`: Generated mapping aid for a learning instance; not a native platform export.
+| File | Role |
+|---|---|
+| `tickets.csv` | Fictional record metadata and interview-ready narrative |
+| `ticket_events.csv` | Canonical timing, assignment, escalation, FCR, and closure history |
+| `users.csv` / `assets.csv` | Stable fictional people and inventory relationships |
+| `ad_groups.csv` | Allowlisted synthetic AD lab groups; not ITSM resolver groups |
+| `resolver_groups.csv` | Fictional help-desk assignment and escalation groups |
+| `priority_matrix.csv` / `sla_targets.csv` | Priority policy and simplified continuous-elapsed-time SLA targets |
+| `request_items.csv` / `request_tasks.csv` | Fictional request approvals and fulfillment tasks |
+| `servicenow_import/` | Generated incident/request **staging** mappings for a personal learning instance |
 
-Edit source CSVs with a CSV-aware application and preserve headers. Run `python tools/labtool.py generate` followed by `python tools/labtool.py validate` after every change.
+Do not hand-edit derived artifacts. Change canonical CSV data, run `python tools/labtool.py generate`, then run `python tools/labtool.py validate`.

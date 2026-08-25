@@ -1,4 +1,4 @@
-# Offboarding workflow - INC005 Lucas Reed
+# Offboarding workflow - REQ002 / RITM002 (fictional)
 
 > **SIMULATED PORTFOLIO WORKFLOW.** Lucas Reed and every approval, system, and result below are fictional.
 
