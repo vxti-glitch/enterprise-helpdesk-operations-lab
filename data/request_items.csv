@@ -1,0 +1,7 @@
+request_id,request_item_id,requested_for_user_id,requested_service,approval_state,fulfillment_group,state
+REQ001,RITM001,USR011,New employee workstation and baseline access,Approved,Service Desk Tier 1,Closed Complete
+REQ002,RITM002,USR014,Offboarding and asset recovery,Approved,Service Desk Tier 1,Closed Complete
+REQ003,RITM003,USR009,Department transfer access change,Approved,Microsoft 365 Support,Closed Complete
+REQ004,RITM004,USR001,Shared Finance mailbox access,Approved,Microsoft 365 Support,Closed Complete
+REQ005,RITM005,USR011,Approved PDF application,Approved,Service Desk Tier 1,Closed Complete
+REQ006,RITM006,USR015,New employee laptop deployment,Approved,Endpoint Management,Closed Complete
