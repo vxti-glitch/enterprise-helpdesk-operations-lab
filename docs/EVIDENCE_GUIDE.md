@@ -36,11 +36,13 @@ For each new artifact, copy `templates/evidence_log.md` and record:
 - Redactions performed.
 - The validation result.
 
+For a personally completed exercise, use the stricter [personal-lab manifest template](../templates/personal_lab_manifest.md) and follow the [three-case roadmap](PERSONAL_LAB_ROADMAP.md). Do not create a `LAB-EXECUTED` label or manifest before completing the exercise yourself.
+
 ## Publishing workflow
 
 1. Save raw captures to `evidence/private/`.
 2. Redact and crop a copy.
 3. Confirm that every visible identity and identifier is fictional.
-4. Place the approved copy in `evidence/screenshots/`.
-5. Update its manifest and README link.
+4. Place application screenshots only in `evidence/screenshots/application/`. Place approved personal-lab captures only in `evidence/screenshots/lab-executed/`.
+5. Add the matching `evidence/manifests/<same-file-stem>.md` manifest and update the README link.
 6. Run the validator before committing.

@@ -3,6 +3,9 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+node_modules/
+playwright-report/
+test-results/
 .idea/
 .vscode/
 *.log
@@ -19,10 +22,31 @@ evidence/screenshots/*.jpg
 evidence/screenshots/*.jpeg
 evidence/screenshots/*.gif
 evidence/screenshots/*.pdf
+evidence/screenshots/**/*.png
+evidence/screenshots/**/*.jpg
+evidence/screenshots/**/*.jpeg
+evidence/screenshots/**/*.gif
+evidence/screenshots/**/*.webp
+evidence/screenshots/**/*.svg
+evidence/screenshots/**/*.tif
+evidence/screenshots/**/*.tiff
+evidence/screenshots/**/*.pdf
 !evidence/screenshots/.gitkeep
 !evidence/screenshots/README.md
 !evidence/screenshots/application/
 !evidence/screenshots/application/*.png
+!evidence/screenshots/lab-executed/
+!evidence/screenshots/lab-executed/*.png
+!evidence/screenshots/lab-executed/*.jpg
+!evidence/screenshots/lab-executed/*.jpeg
+!evidence/screenshots/lab-executed/*.gif
+!evidence/screenshots/lab-executed/*.webp
+!evidence/screenshots/lab-executed/*.svg
+!evidence/screenshots/lab-executed/*.tif
+!evidence/screenshots/lab-executed/*.tiff
+!evidence/screenshots/lab-executed/*.pdf
+!evidence/manifests/
+!evidence/manifests/*.md
 
 # Common secret and certificate formats.
 .env

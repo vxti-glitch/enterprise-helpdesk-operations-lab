@@ -67,12 +67,63 @@ Describe 'NorthstarLabGuard containment' {
     }
 }
 
+Describe 'NorthstarLabGuard audit-path containment' {
+    BeforeEach {
+        $script:PrivateRoot = Join-Path $TestDrive 'evidence\private'
+    }
+
+    It 'accepts a valid child path' {
+        $candidate = Join-Path $script:PrivateRoot 'ad\actions.jsonl'
+        $actual = Resolve-NorthstarLabChildPath -CandidatePath $candidate -RootPath $script:PrivateRoot
+        if ($actual -ne [System.IO.Path]::GetFullPath($candidate)) {
+            throw 'Expected a valid audit child path to be returned unchanged after resolution.'
+        }
+    }
+
+    It 'rejects a sibling-prefix escape' {
+        $candidate = "$($script:PrivateRoot)-escape\actions.jsonl"
+        $threw = $false
+        try { $null = Resolve-NorthstarLabChildPath -CandidatePath $candidate -RootPath $script:PrivateRoot } catch { $threw = $true }
+        if (-not $threw) { throw 'Expected sibling-prefix audit path escape to be rejected.' }
+    }
+
+    It 'rejects parent traversal' {
+        $candidate = Join-Path $script:PrivateRoot '..\outside\actions.jsonl'
+        $threw = $false
+        try { $null = Resolve-NorthstarLabChildPath -CandidatePath $candidate -RootPath $script:PrivateRoot } catch { $threw = $true }
+        if (-not $threw) { throw 'Expected parent-traversal audit path escape to be rejected.' }
+    }
+
+    It 'rejects an absolute outside path' {
+        $candidate = Join-Path $TestDrive 'outside\actions.jsonl'
+        $threw = $false
+        try { $null = Resolve-NorthstarLabChildPath -CandidatePath $candidate -RootPath $script:PrivateRoot } catch { $threw = $true }
+        if (-not $threw) { throw 'Expected absolute outside audit path to be rejected.' }
+    }
+
+    It 'accepts alternate separators for a valid child' {
+        $candidate = "$(($script:PrivateRoot -replace '\\', '/'))/ad/actions.jsonl"
+        try { $null = Resolve-NorthstarLabChildPath -CandidatePath $candidate -RootPath $script:PrivateRoot } catch { throw "Expected alternate separators to remain inside the audit root: $($_.Exception.Message)" }
+    }
+}
+
 Describe 'Invoke-AccountSupport safety ordering' {
     It 'checks ShouldProcess before prompting for a password' {
         $scriptPath = Join-Path $PSScriptRoot '..\..\scripts\powershell\Invoke-AccountSupport.ps1'
         $content = Get-Content -LiteralPath $scriptPath -Raw
         if ($content.IndexOf('ShouldProcess($target, $operation)') -ge $content.IndexOf("Read-Host 'Enter a temporary LAB password")) {
             throw 'The secure password prompt must appear after the ShouldProcess check.'
+        }
+    }
+
+    It 'uses resolved path containment rather than a string prefix comparison' {
+        $scriptPath = Join-Path $PSScriptRoot '..\..\scripts\powershell\Invoke-AccountSupport.ps1'
+        $content = Get-Content -LiteralPath $scriptPath -Raw
+        if ($content -notmatch 'Resolve-NorthstarLabChildPath') {
+            throw 'Expected the account-support script to use resolved audit-path containment.'
+        }
+        if ($content -match 'fullAuditPath\.StartsWith') {
+            throw 'A string-prefix audit-path containment check must not remain.'
         }
     }
 }
