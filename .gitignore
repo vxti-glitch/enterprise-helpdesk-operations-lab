@@ -10,6 +10,7 @@ venv/
 *.bak
 Thumbs.db
 .DS_Store
+dist/
 
 # Real or local-only evidence must never be committed by default.
 evidence/private/
@@ -20,6 +21,8 @@ evidence/screenshots/*.gif
 evidence/screenshots/*.pdf
 !evidence/screenshots/.gitkeep
 !evidence/screenshots/README.md
+!evidence/screenshots/application/
+!evidence/screenshots/application/*.png
 
 # Common secret and certificate formats.
 .env
