@@ -1,0 +1,10 @@
+impact,urgency,priority,policy_note
+1-High,1-High,P1,Critical service interruption or severe confirmed security impact
+1-High,2-Medium,P2,High business impact with standard response window
+1-High,3-Low,P3,High-impact item with planned or non-urgent fulfillment
+2-Medium,1-High,P2,Time-sensitive degradation with a bounded blast radius
+2-Medium,2-Medium,P3,Standard single-user incident or normal operational request
+2-Medium,3-Low,P3,Planned access or operational work with moderate impact
+3-Low,1-High,P3,Low-impact item that is time-sensitive for one user
+3-Low,2-Medium,P4,Low-impact request or planned fulfillment
+3-Low,3-Low,P4,Low-impact routine request

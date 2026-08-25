@@ -1,100 +1,69 @@
-# Quick-start guide
+# Quick start
 
-The base repository runs without a domain controller, ServiceNow instance, or Microsoft 365 tenant. Python commands use only the standard library.
+The base project runs without a domain controller, ServiceNow instance, Microsoft 365 tenant, Docker, database, or external JavaScript package.
 
-## 1. Validate the committed lab
-
-From the repository root:
+## Run the console
 
 ```powershell
-python tools/labtool.py validate
-python tools/labtool.py metrics
-python -m unittest discover -s tests -v
+python tools/labtool.py generate --strict-baseline
+python tools/labtool.py validate --strict-baseline
+python tools/labtool.py serve
 ```
 
-`validate` checks schemas, row counts, unique IDs, fictional-domain markers, ticket timestamps, SLA references, linked KB articles, linked assets, generated ticket files, and the expected portfolio metrics. `metrics` prints the current report to the console. Tests exercise the same calculations independently.
+Open the local address printed by the server. The console reads `web/data/lab.json`, a generated artifact created from the fictional CSV and event data.
 
-## 2. Regenerate derived files
+## Validate and test
 
-After editing CSV source data:
+```powershell
+.\scripts\powershell\Test-Repository.ps1
+```
+
+Individual commands:
+
+```powershell
+python tools/labtool.py metrics --strict-baseline
+python -m unittest discover -s tests -v
+node --test web/filters.test.mjs
+Invoke-Pester .\tests\powershell\NorthstarLabGuard.Tests.ps1
+```
+
+`validate` performs generic schema and relationship validation. `--strict-baseline` additionally checks the committed 40-record demonstration totals. Use generic validation while customizing the lab; use strict baseline to confirm the published demonstration state.
+
+## Regenerate derived files
+
+After editing canonical fictional data, run:
 
 ```powershell
 python tools/labtool.py generate
 python tools/labtool.py validate
 ```
 
-Generation rewrites only these derived artifacts:
+Generation produces human-readable records, event-derived metrics, separate incident/request staging mappings, and console data. It validates before writing, stages outputs, and refuses destinations outside the allowed generated directories.
 
-- `tickets/generated/INC001.md` through `INC040.md`
-- `docs/metrics/SLA_REPORT.md`
-- `evidence/generated/metrics.json`
-- `data/servicenow_import/incidents.csv`
+## Package a clean commit
 
-The import CSV uses readable field names that can be mapped into a learning instance. It is not represented as a native ServiceNow export.
-
-## 3. Run read-only Windows network triage
+After committing all changes and confirming a clean worktree:
 
 ```powershell
-.\scripts\powershell\Invoke-NetworkTriage.ps1 `
-  -TargetHost example.com `
-  -TcpPort 443 `
-  -OutputPath .\evidence\private\my-network-check.json
+python tools/labtool.py package
 ```
 
-The script collects local adapter configuration, default route state, DNS resolution, ICMP results, and a TCP connection test. It changes no system settings.
+This creates a Git-archive ZIP and SHA-256 checksum under `dist/`. The command refuses to package a dirty or invalid repository.
 
-## 4. Parse-check PowerShell locally
+## Optional isolated AD lab
 
-This confirms syntax without importing AD modules or executing a command:
-
-```powershell
-$failed = $false
-Get-ChildItem .\scripts\powershell\*.ps1 | ForEach-Object {
-    $tokens = $null
-    $errors = $null
-    [void][System.Management.Automation.Language.Parser]::ParseFile(
-        $_.FullName,
-        [ref]$tokens,
-        [ref]$errors
-    )
-    if ($errors.Count -gt 0) {
-        $failed = $true
-        $errors | Format-List
-    }
-}
-if ($failed) { throw "PowerShell parse errors found." }
-```
-
-## 5. Optional isolated AD lab
-
-Prerequisites:
-
-- An isolated Windows Server VM with an AD forest whose DNS root is exactly `northstar.example`.
-- The ActiveDirectory PowerShell module.
-- A snapshot/checkpoint before making changes.
-- Authorization to modify the lab.
-
-First review the plan:
+Read [the AD lab guide](ACTIVE_DIRECTORY_LAB.md) first. The scripts are intentionally fixed to `northstar.example` and a sentinel-marked `OU=Northstar Lab`; they are not reusable generic administration scripts.
 
 ```powershell
 .\scripts\powershell\Test-LabPrerequisites.ps1
 .\scripts\powershell\New-LabAdStructure.ps1
-.\scripts\powershell\Import-LabUsers.ps1
-```
-
-Then preview state-changing cmdlets:
-
-```powershell
 .\scripts\powershell\New-LabAdStructure.ps1 -Execute -WhatIf
+.\scripts\powershell\Import-LabUsers.ps1
 .\scripts\powershell\Import-LabUsers.ps1 -Execute -WhatIf
 ```
 
-Only remove `-WhatIf` after reviewing the exact targets. Imported accounts are disabled and have no password. Use `Invoke-AccountSupport.ps1` to set a temporary password through a secure prompt and enable one lab account when needed.
+Only remove `-WhatIf` in a disposable, authorized lab after reviewing the target. State-changing account support also requires `-Execute` and a fictional `-TicketId` such as `INC012`.
 
-## 6. Optional ServiceNow learning instance
+## Optional ServiceNow learning instance
 
-Follow `docs/SERVICENOW_LAB_GUIDE.md`. Recreate a small representative subset before attempting all 40 records. Keep screenshots under `evidence/private/` until they pass the privacy checklist.
-
-## 7. Customize honestly
-
-Replace the fictional company name, cases, metrics, and evidence only after understanding the changes. If you execute a step in your own lab, describe it as hands-on lab work. If you only review the supplied simulation, describe it as a modeled workflow.
+Follow [the ServiceNow PDI guide](SERVICENOW_LAB_GUIDE.md) and recreate a small representative set. Keep raw evidence under `evidence/private/` until it has been redacted and truthfully labeled.

@@ -1,115 +1,128 @@
-# Enterprise Help Desk Operations Lab
+# Northstar Help Desk Operations Console
 
-> **Portfolio simulation - not employment history.** Northstar Solutions, every person, ticket, device, timestamp, hostname, email address, and result in this repository is fictional. The material demonstrates a repeatable lab process and does not claim access to a production environment or work performed for an employer.
+> **SIMULATED PORTFOLIO LAB — Historical fictional service-desk data, not production activity or employment results.** Northstar Solutions, its people, assets, cases, timestamps, and metrics are fictional. This repository does not claim employer work, production access, or third-party platform administration.
 
-This repository models the day-to-day work of a Tier 1 remote service desk: intake, triage, troubleshooting, documentation, escalation, identity lifecycle tasks, endpoint inventory, and service-level reporting. It connects the skills on my IT support resume - Windows 10/11, Active Directory, Microsoft 365/Entra ID concepts, Intune/Autopilot concepts, DNS/TCP troubleshooting, ticket documentation, PowerShell, Python, CSV, JSON, Markdown, and GitHub Actions - into one honest end-to-end portfolio project.
+![Application view displaying simulated portfolio data](evidence/screenshots/application/overview.png)
 
-## What is included
+Northstar is an offline-capable help-desk portfolio lab designed around the journey a remote Tier 1 analyst needs to explain: intake, safe diagnosis, clear user communication, escalation boundaries, identity lifecycle awareness, inventory context, and reproducible reporting.
 
-| Area | Portfolio evidence |
+The project is deliberately not a fake production ServiceNow clone. It is a static historical operations console built from validated fictional data, plus optional lab scripts that refuse to operate outside a marked `northstar.example` Active Directory learning environment.
+
+## Start here — a three-minute reviewer path
+
+1. Run the local console and choose **Start 90-second tour**.
+2. Read [INC012](tickets/generated/INC012.md) for a DNS diagnosis, [INC009](tickets/generated/INC009.md) for a security escalation, and [INC040](tickets/generated/INC040.md) for a time-sensitive meeting issue.
+3. Inspect the event-derived [SLA report](docs/metrics/SLA_REPORT.md), then review the [PowerShell safety model](docs/ACTIVE_DIRECTORY_LAB.md).
+4. Use the [demo script](docs/DEMO_SCRIPT.md) to rehearse how to explain the project in an interview.
+
+## What the project demonstrates
+
+| Area | Evidence in this repository |
 |---|---|
-| Ticketing | 40 ServiceNow-style simulated incidents and requests with consistent fields, work notes, resolutions, and escalations |
-| Active Directory | Safe PowerShell lab scripts for OU/group setup, disabled-user import, and common account-support actions |
-| Networking | DNS, ICMP, TCP-port, route, and adapter triage script plus documented network cases |
-| Lifecycle operations | Complete onboarding and offboarding workflows with approval and validation gates |
-| Asset management | 20 synthetic Windows-device records with ownership, lifecycle status, and verification dates |
-| Knowledge management | 10 Tier 1 knowledge-base articles linked to recurring ticket scenarios |
-| Service operations | Priority matrix, SLA targets, escalation matrix, and metrics calculated from ticket timestamps |
-| Evidence | Sanitized sample outputs, an evidence manifest, and a screenshot capture plan - no invented screenshots |
-| Quality | Standard-library Python validator, unit tests, PowerShell parse checks, and GitHub Actions |
+| Help-desk workflow | 40 fictional incidents and requests, each with an event timeline, diagnostic narrative, resolution, validation, and user communication |
+| ITSM data modeling | Separate incidents and service requests, legacy ID mapping, request items/tasks, final resolver groups, priority matrix, and event-derived results |
+| Remote-support judgment | Clear user updates, documented scope, safe escalation handoffs, and intentionally retained difficult cases |
+| Windows and networking | Read-only Windows DNS/ICMP/TCP/route triage script and documented troubleshooting cases |
+| Identity lifecycle | Sentinel-marked AD lab structure, disabled synthetic user import, guarded account support, onboarding, and offboarding workflows |
+| Asset management | 20 synthetic assets connected to fictional people, lifecycle status, and related records |
+| Knowledge management | Twelve linked Tier 1 articles, including access-change and offboarding guidance |
+| Reproducibility | Standard-library generator, validation, generated console data, unit tests, Pester safety tests, CI, and commit-exact packaging |
 
-## Measured lab results
+## What it does **not** demonstrate
 
-The committed report is generated from `data/tickets.csv`; the figures are not typed into the report by hand.
+- Employment supporting real users, a production SLA, or a real 75-person company.
+- Live ServiceNow, Active Directory, Microsoft 365, Entra ID, Intune, Autopilot, VPN, or security-console administration.
+- A replacement for a production ITSM tool, security process, approval workflow, or change-control system.
 
-| Metric | Result |
-|---|---:|
-| Tickets modeled | 40 |
-| First-contact resolutions | 26 (65.0%) |
-| Escalations | 8 (20.0%) |
-| Tickets meeting both SLA targets | 37 (92.5%) |
-| Knowledge-base articles | 10 |
-| Synthetic assets | 20 |
+Add `LAB-EXECUTED` evidence only after personally performing a task in an authorized learning lab and redacting the capture. See [the evidence guide](docs/EVIDENCE_GUIDE.md).
 
-See [the generated SLA report](docs/metrics/SLA_REPORT.md) for definitions, priority-level results, and the three intentionally missed targets.
+## Run it locally
 
-## Repository map
-
-```text
-enterprise-helpdesk-operations-lab/
-|-- data/                         Synthetic source data and import-ready CSVs
-|-- docs/                         Architecture, setup, workflows, evidence, and interview notes
-|-- evidence/                     Clearly labeled sample and generated lab evidence
-|-- kb/                           Ten knowledge-base articles
-|-- scripts/powershell/           Safe AD and Windows troubleshooting scripts
-|-- templates/                    Reusable ticket and evidence templates
-|-- tickets/generated/            Forty generated, human-readable ticket records
-|-- tools/labtool.py              Validator, report generator, and ticket renderer
-`-- tests/                         Standard-library unit tests
-```
-
-## Quick start
-
-Python 3.10 or newer is recommended. No third-party Python packages are required.
+Requirements: Python 3.10+ and, for JavaScript tests only, Node.js 20+.
 
 ```powershell
-python tools/labtool.py validate
-python tools/labtool.py metrics
-python tools/labtool.py generate
-python -m unittest discover -s tests -v
+git clone https://github.com/vxti-glitch/enterprise-helpdesk-operations-lab.git
+cd enterprise-helpdesk-operations-lab
+python tools/labtool.py generate --strict-baseline
+python tools/labtool.py validate --strict-baseline
+python tools/labtool.py serve
 ```
 
-On Windows, run the complete check set with one command:
+Open the address printed by `serve`, normally `http://127.0.0.1:8000/`. The console uses only the generated local `web/data/lab.json` file and makes no external data request.
+
+Run the full local check set:
 
 ```powershell
 .\scripts\powershell\Test-Repository.ps1
 ```
 
-On a Windows lab machine, the read-only network triage script can be run separately:
+Or run individual checks:
 
 ```powershell
-.\scripts\powershell\Invoke-NetworkTriage.ps1 -TargetHost example.com -TcpPort 443
+python -m unittest discover -s tests -v
+node --test web/filters.test.mjs
+Invoke-Pester .\tests\powershell\NorthstarLabGuard.Tests.ps1
 ```
 
-The AD scripts default to planning or read-only behavior. State-changing operations require `-Execute`, support `-WhatIf`, and refuse to run unless the connected AD DNS root exactly matches `northstar.example`. Read [the quick-start guide](docs/QUICKSTART.md) before using them.
+## Console views
 
-## Suggested review path
+| View | Purpose |
+|---|---|
+| Overview | Makes the simulated-data boundary, event-derived metrics, priority compliance, and retained misses clear immediately |
+| Tickets | Search, combine filters, sort, inspect responsive cards, and follow reloadable deep links |
+| Ticket detail | Review a UTC event timeline, diagnostic narrative, SLA comparison, related asset/user/KB/evidence, and escalation handoff |
+| Inventory | Follow fictional asset → person → ticket relationships without fake destructive controls |
+| Playbooks | Read onboarding, offboarding, KB, escalation, and trust-boundary guidance |
+| Evidence & about | See what is simulated, which sample outputs exist, and how to add personally executed lab evidence honestly |
 
-1. Start with [the architecture](docs/ARCHITECTURE.md) and [simulation boundaries](docs/SIMULATION_BOUNDARIES.md).
-2. Read a routine resolution such as [INC012](tickets/generated/INC012.md), a security escalation such as [INC009](tickets/generated/INC009.md), and the priority-handling case [INC040](tickets/generated/INC040.md).
-3. Review [onboarding](docs/workflows/ONBOARDING.md), [offboarding](docs/workflows/OFFBOARDING.md), and [the escalation matrix](docs/workflows/ESCALATION_MATRIX.md).
-4. Study the [AD lab](docs/ACTIVE_DIRECTORY_LAB.md), [network case matrix](docs/NETWORK_CASES.md), and [asset lifecycle](docs/ASSET_MANAGEMENT.md).
-5. Inspect the scripts and run the validator and tests.
-6. Use [the evidence guide](docs/EVIDENCE_GUIDE.md) and [project checklist](docs/PROJECT_CHECKLIST.md) to add only evidence you personally capture.
+More genuine application views displaying simulated data:
 
-## Optional hands-on environment
+| Filtered record queue | DNS ticket detail | Asset relationship |
+|---|---|---|
+| ![Filtered fictional record queue](evidence/screenshots/application/ticket-queue-filtered.png) | ![Fictional INC012 detail](evidence/screenshots/application/ticket-detail-inc012.png) | ![Fictional asset relationship](evidence/screenshots/application/asset-relationship.png) |
 
-The repository is useful without paid services or cloud tenants. An optional implementation can include:
+## Data and architecture
 
-- One Windows Server evaluation VM for AD DS and DNS.
-- One Windows 11 evaluation VM joined to the isolated lab domain.
-- A ServiceNow Personal Developer Instance for recreating a subset of the ticket workflow.
-- A legitimate Microsoft 365/Entra/Intune lab tenant, if independently available.
+```text
+fictional CSV records + event history
+        │
+        ▼
+schema / relationship / path-containment validation
+        │
+        ├── generated record Markdown
+        ├── event-derived SLA report and JSON
+        ├── separate incident and request staging CSVs
+        └── static Operations Console payload
+```
 
-Microsoft 365, Entra ID, Intune, Autopilot, VPN, and ServiceNow actions remain documented simulations unless you personally execute and capture them in an authorized lab. Never describe the CSV records as a ServiceNow export or the workflow notes as production experience.
+`data/ticket_events.csv` is the source for acknowledgement, escalation, first-contact resolution, resolution, and closure timing. Summary timestamps and flags in `data/tickets.csv` are checked against the event history; the metrics engine does not trust them as its source of truth.
+
+Read [the architecture](docs/ARCHITECTURE.md) and [data dictionary](docs/DATA_DICTIONARY.md) for precise relationships, limits, and safety controls.
+
+## Active Directory lab safety
+
+The mutation scripts are intentionally narrow:
+
+- They cannot be retargeted from the fixed `northstar.example` synthetic domain.
+- They require `OU=Northstar Lab` to carry a specific synthetic-lab sentinel.
+- They reject users and groups outside that marked OU, service accounts, protected objects, administrative objects, and non-allowlisted groups.
+- State-changing actions require `-Execute`, a fictional `INC###` or `REQ###` ID, `ShouldProcess`, and secret-free local audit output.
+- `-WhatIf` creates a plan without prompting for a password or changing state.
+
+See [the AD lab guide](docs/ACTIVE_DIRECTORY_LAB.md) before running a script in an isolated learning environment.
+
+## GitHub Pages
+
+The repository includes a Pages deployment workflow. After the branch is merged, enable **Settings → Pages → Build and deployment → GitHub Actions** once. The site is static and deploys only the generated `web/` directory.
 
 ## Honest resume language
 
-Suggested project entry after you have reviewed and can explain the material:
+> **Northstar Help Desk Operations Console | Python, PowerShell, ITSM, Windows Support**
+> Built a fictional, event-derived help-desk portfolio lab with a static console for 40 documented incidents and service requests spanning identity, Microsoft 365 concepts, endpoint, networking, inventory, and security triage.
+> Created validated ticket/event data, safe Active Directory lab scripts, knowledge articles, lifecycle workflows, and reproducible simplified SLA reporting; clearly labeled all records and metrics as simulated.
 
-> **Enterprise Help Desk Operations Lab | Windows, Active Directory, PowerShell, ITSM**<br>
-> Built a fictional service-desk environment with 40 documented incidents and requests spanning identity, Microsoft 365, endpoint, networking, and security triage; recorded resolution, validation, escalation, and user communication notes.<br>
-> Created safe AD lab scripts, 10 knowledge-base articles, a 20-device synthetic asset inventory, onboarding/offboarding workflows, and reproducible SLA reporting from timestamped ticket data.
+Use words such as **built**, **modeled**, **simulated**, **lab**, and **documented**. Do not claim to have supported real users or maintained a production SLA.
 
-Use "built," "modeled," "simulated," or "lab" - never "supported 75 users" or "maintained production SLA."
+## License and attribution
 
-## Safety and privacy
-
-- All data uses reserved domains, documentation IP ranges, and obviously synthetic serials.
-- No passwords, tokens, tenant identifiers, API keys, real employee data, or real serial numbers belong in this repository.
-- Review [SECURITY.md](SECURITY.md) before publishing screenshots or command output.
-- This project is not affiliated with or endorsed by ServiceNow or Microsoft.
-
-## License
-
-Code is available under the [MIT License](LICENSE). Documentation and simulated data may be reused with attribution, but customize them before presenting the lab as your own work.
+Code is available under the [MIT License](LICENSE). The fictional data and documentation are reusable with attribution, but should be rewritten and customized before being presented as another person's work.

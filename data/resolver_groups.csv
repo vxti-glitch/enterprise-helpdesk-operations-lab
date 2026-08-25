@@ -1,0 +1,7 @@
+resolver_group_id,name,tier,scope,simulation_note
+RGRP001,Service Desk Tier 1,Tier 1,Initial diagnosis user communication and standard resolution,Fictional internal resolver group
+RGRP002,Application Support,Tier 2,Application compatibility and owner-managed software,Fictional resolver group
+RGRP003,Endpoint Management,Tier 2,Windows enrollment compliance and device deployment,Fictional resolver group
+RGRP004,Microsoft 365 Support,Tier 2,Mailbox collaboration and tenant-scoped access,Fictional resolver group
+RGRP005,Network Operations,Tier 2,DNS VPN routing and network infrastructure,Fictional resolver group
+RGRP006,Security Operations,Security,Suspicious sign-ins phishing and security investigations,Fictional resolver group
