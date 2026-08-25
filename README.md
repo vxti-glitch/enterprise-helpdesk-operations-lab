@@ -36,19 +36,39 @@ The project is deliberately not a fake production ServiceNow clone. It is a stat
 
 Add `LAB-EXECUTED` evidence only after personally performing a task in an authorized learning lab and redacting the capture. See [the evidence guide](docs/EVIDENCE_GUIDE.md).
 
-## Run it locally
+## Run it locally (Windows)
 
-Requirements: Python 3.10+ and, for JavaScript tests only, Node.js 20+.
+You only need Python 3.10+ to view the console. You do **not** need ServiceNow, Active Directory, Microsoft 365, or an internet connection after cloning.
+
+### First time: copy and paste this into PowerShell
+
+Open PowerShell, then paste the whole block. The first line deliberately moves you out of `C:\Windows\System32`, which avoids the permission error that occurs when Git tries to create a project folder there.
 
 ```powershell
+cd "$env:USERPROFILE\Documents"
 git clone https://github.com/vxti-glitch/enterprise-helpdesk-operations-lab.git
-cd enterprise-helpdesk-operations-lab
-python tools/labtool.py generate --strict-baseline
-python tools/labtool.py validate --strict-baseline
-python tools/labtool.py serve
+cd .\enterprise-helpdesk-operations-lab
+python tools\labtool.py generate --strict-baseline
+python tools\labtool.py validate --strict-baseline
+python tools\labtool.py serve --open
 ```
 
-Open the address printed by `serve`, normally `http://127.0.0.1:8000/`. The console uses only the generated local `web/data/lab.json` file and makes no external data request.
+Your browser should open automatically. If it does not, open [http://127.0.0.1:8000/](http://127.0.0.1:8000/) yourself. Keep the PowerShell window open while using the console; press `Ctrl+C` there when you are finished to stop the local server.
+
+### If you already downloaded or cloned the project
+
+Do **not** clone it again. Open PowerShell and run this instead:
+
+```powershell
+cd "$env:USERPROFILE\Documents\enterprise-helpdesk-operations-lab"
+python tools\labtool.py serve --open
+```
+
+If your copy is stored elsewhere, open its folder in File Explorer, click the address bar, type `powershell`, press Enter, and then run `python tools\labtool.py serve --open`.
+
+### If PowerShell says `python` is not recognized
+
+Install Python 3 from the Microsoft Store or [python.org](https://www.python.org/downloads/), reopen PowerShell, then repeat the command. On some Windows installations, replace `python` with `py` in the commands above.
 
 Run the full local check set:
 
