@@ -1,0 +1,9 @@
+request_item_id,task_id,sequence,assignment_group,state,task_summary
+RITM001,SCTASK001,1,Service Desk Tier 1,Closed Complete,Verify approved onboarding inputs and stock availability
+RITM001,SCTASK002,2,Service Desk Tier 1,Closed Complete,Create disabled synthetic identity and prepare workstation handoff
+RITM002,SCTASK003,1,Service Desk Tier 1,Closed Complete,Validate offboarding approval and disable synthetic access
+RITM002,SCTASK004,2,Service Desk Tier 1,Closed Complete,Recover assigned synthetic asset and document custody
+RITM003,SCTASK005,1,Microsoft 365 Support,Closed Complete,Apply approved fictional access change after manager approval
+RITM004,SCTASK006,1,Microsoft 365 Support,Closed Complete,Apply approved shared mailbox access
+RITM005,SCTASK007,1,Service Desk Tier 1,Closed Complete,Install approved fictional catalog application
+RITM006,SCTASK008,1,Endpoint Management,Closed Complete,Apply fictional enrollment profile and compliance validation
