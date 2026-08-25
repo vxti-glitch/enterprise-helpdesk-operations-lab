@@ -2,7 +2,7 @@
 
 ## Thirty-second project summary
 
-"I built a simulated enterprise help-desk operations lab around a fictional company. I modeled 40 incidents and requests, linked them to synthetic users and assets, wrote concise troubleshooting and escalation notes, created safe Active Directory and network-triage scripts, documented onboarding and offboarding, and generated SLA metrics directly from the ticket timestamps. The ServiceNow and cloud records are clearly simulations; the scripts are designed for an isolated lab."
+"I built a simulated enterprise help-desk operations lab around a fictional company. I modeled 40 incidents and requests, linked them to synthetic users and assets, wrote concise troubleshooting and escalation notes, created guarded Active Directory and network-triage scripts, documented onboarding and offboarding, and generated simplified SLA metrics from canonical event history. The ServiceNow and cloud records are clearly simulations; the scripts are designed for an isolated lab."
 
 ## Three stories to know well
 
@@ -26,7 +26,7 @@ No. Northstar is fictional, and the repository labels all users and tickets as s
 
 ### Are these screenshots from ServiceNow?
 
-No screenshots are supplied. The fields are ServiceNow-style learning records. If I recreate records in my own PDI, I will label those images as lab-executed.
+No. The committed images are screenshots of the Northstar application displaying simulated data. They prove this static application was built; they do not prove ServiceNow, Active Directory, Microsoft 365, or employer experience. If I recreate records in my own PDI, I will label those captures LAB-EXECUTED only after personally completing and redacting the exercise.
 
 ### How is the 92.5% SLA rate calculated?
 

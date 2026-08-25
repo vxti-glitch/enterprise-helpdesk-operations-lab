@@ -1,8 +1,10 @@
 # Quick start
 
-The base project runs without a domain controller, ServiceNow instance, Microsoft 365 tenant, Docker, database, or external JavaScript package.
+The console itself runs without a domain controller, ServiceNow instance, Microsoft 365 tenant, Docker, database, or runtime JavaScript package. The optional browser regression checks use the pinned development dependencies in `package-lock.json`.
 
 ## Run the console
+
+The published simulated demo is available at [GitHub Pages](https://vxti-glitch.github.io/enterprise-helpdesk-operations-lab/). To run your local copy:
 
 ```powershell
 python tools/labtool.py generate --strict-baseline
@@ -38,7 +40,7 @@ python tools/labtool.py generate
 python tools/labtool.py validate
 ```
 
-Generation produces human-readable records, event-derived metrics, separate incident/request staging mappings, and console data. It validates before writing, stages outputs, and refuses destinations outside the allowed generated directories.
+Generation produces human-readable records, event-derived metrics, separate incident/request staging mappings, and console data. It validates before writing, stages outputs, and refuses destinations outside the allowed generated directories. `serve` refuses to start if these derived artifacts are stale, so run `generate` first after a source-data edit.
 
 ## Package a clean commit
 

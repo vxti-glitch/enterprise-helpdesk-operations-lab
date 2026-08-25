@@ -11,7 +11,7 @@
 | `ticket_id`, `legacy_id`, `type` | Record identity and incident/request distinction |
 | `caller_id`, `caller`, `department`, `asset_id` | Stable fictional relationship keys and display context |
 | `impact`, `urgency`, `priority`, `priority_override_reason` | Priority policy inputs; an exception requires a documented reason |
-| `assignment_group`, `state`, `resolution_code` | Final modeled resolver and closure outcome |
+| `assignment_group`, `resolution_state`, `final_state`, `resolution_code` | Final modeled resolver, resolution state, closure state, and outcome code |
 | `initial_report` through `user_communication` | Interview-ready fictional narrative, not a production transcript |
 | `opened_at`, `first_response_at`, `resolved_at`, `escalated`, `first_contact_resolution` | Human-readable summary values that validation checks against the event history |
 | `evidence_ref` | Repository-relative path under `evidence/`, or `none` |
@@ -34,10 +34,10 @@ All timestamps are ISO 8601 UTC values. The simplified SLA clock is continuous e
 
 ## Relationships
 
-- `caller_id` resolves to `data/users.csv`.
+- `caller_id` resolves to `data/users.csv`. For a service request, it is the beneficiary and must equal `requested_for_user_id`.
 - `asset_id` resolves to `data/assets.csv`.
 - `assignment_group` resolves to `data/resolver_groups.csv`.
-- Service requests require `data/request_items.csv` and at least one `data/request_tasks.csv` row.
+- Service requests require exactly one `data/request_items.csv` row and at least one contiguous, ordered `data/request_tasks.csv` row. `requested_by_user_id` and `requested_for_user_id` are distinct, validated relationships.
 - `kb_reference` resolves to an article under `kb/` unless its value is `none`.
 - `priority` must match `data/priority_matrix.csv` unless `priority_override_reason` is present.
 
