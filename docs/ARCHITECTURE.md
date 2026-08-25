@@ -1,49 +1,61 @@
-# Lab architecture
+# Lab architecture and trust boundaries
 
-Northstar Solutions is a fictional 75-person hybrid company. The support boundary is intentionally small enough to reproduce on one computer while still demonstrating enterprise-style handoffs.
+> **Simulation boundary:** Every component, person, asset, record, and metric described here is fictional or an optional personal learning-lab exercise. Nothing in this repository connects automatically to an employer system.
 
-```mermaid
-flowchart LR
-    U["Fictional remote and office users"] --> C["Service desk intake\nServiceNow-style records"]
-    C --> T1["Tier 1 support workflow\ntriage - notes - communication"]
-    T1 --> W["Windows 11 lab client"]
-    T1 --> AD["Windows Server lab VM\nAD DS and DNS\noptional hands-on"]
-    T1 --> NET["Network triage\nDNS - ICMP - TCP - routes"]
-    T1 --> CLOUD["M365 - Entra - Intune\ndocumented simulation unless available"]
-    T1 --> E["Tier 2 - Network - Security - IAM\nescalation groups"]
-    T1 --> KB["Knowledge base"]
-    C --> M["SLA metrics and asset inventory"]
-    AD --> EV["Sanitized evidence"]
-    NET --> EV
-    C --> EV
-    EV --> G["GitHub portfolio repository"]
+## Purpose
+
+Northstar models a completed historical service-desk snapshot for a fictional 75-person hybrid organization. The goal is to make the relationship between help-desk decisions, structured documentation, evidence, and automation easy to demonstrate in an interview.
+
+```text
+Fictional callers
+      │
+      ▼
+Tickets + request items + event history ──► Validation ──► Markdown records
+      │                                         │               SLA report
+      │                                         │               ITSM staging CSVs
+      │                                         └──────────────► Static Operations Console
+      │
+      ├─ Windows endpoint and network-triage learning cases
+      ├─ Optional sentinel-marked AD/DNS learning lab
+      └─ Fictional resolver groups for documented escalation handoffs
 ```
 
-## Logical components
+## Canonical data flow
 
-| Component | Purpose | Required? | State in this repository |
-|---|---|---:|---|
-| Ticket dataset | Source of incidents, requests, notes, and timestamps | Yes | Fully simulated CSV plus generated Markdown |
-| Asset inventory | Ownership and lifecycle context | Yes | 20 synthetic devices |
-| SLA engine | Reproducible response/resolution calculations | Yes | Runnable standard-library Python |
-| AD/DNS server | Identity and internal name-resolution practice | No | Build guide and guarded scripts |
-| Windows client | Endpoint and remote-support practice | No | Cases and evidence plan |
-| ServiceNow PDI | ITSM interface practice | No | Field mapping and recreation guide |
-| M365 lab tenant | Cloud identity/application practice | No | Controlled simulation unless independently available |
+| Source | Role |
+|---|---|
+| `data/tickets.csv` | Fictional narrative, classification, relationship, and final-state record metadata |
+| `data/ticket_events.csv` | Canonical event history for opened, acknowledged, work-note, assignment, pending, escalation, first-contact resolution, resolution, and closure events |
+| `data/users.csv` / `data/assets.csv` | Stable fictional identities and assets |
+| `data/ad_groups.csv` | Synthetic AD access-group allowlist for the optional lab |
+| `data/resolver_groups.csv` | Fictional help-desk resolver groups; deliberately separate from AD access groups |
+| `data/request_items.csv` / `data/request_tasks.csv` | Fictional request fulfillment, approval, and task relationships |
+| `data/priority_matrix.csv` | Impact/urgency policy used to validate priority selection |
 
-## Identity design
+`tools/labtool.py validate` verifies schemas, values, relationships, priority policy, event order, evidence-path containment, known marker patterns, Markdown links, and freshness of all generated artifacts. The strict baseline is optional so learners can customize the dataset while still using generic schema and relationship validation.
 
-- DNS root: `northstar.example` (reserved for documentation)
-- NetBIOS name: `NORTHSTAR`
-- Top-level lab OU: `OU=Northstar Lab,DC=northstar,DC=example`
-- Department OUs: Finance, HR, Sales, Operations, Engineering, Management
-- Control OUs: Disabled Users, Service Accounts, Workstations
-- Groups use a `GG-` prefix and are listed in `data/groups.csv`
+## Generated outputs
 
-## Trust boundaries
+- `tickets/generated/` — one human-readable fictional record per incident or request.
+- `docs/metrics/SLA_REPORT.md` and `evidence/generated/metrics.json` — event-derived simplified SLA reporting.
+- `data/servicenow_import/incidents.csv` and `requests.csv` — separate **staging** mappings, not direct production exports.
+- `web/data/lab.json` — normalized local data for the static Operations Console.
 
-The repository is outside every real tenant and corporate network. No script automatically connects to Microsoft Graph, ServiceNow, a VPN, or an unknown AD domain. AD mutation requires two independent conditions: the `-Execute` switch and an exact domain-root match.
+Generation validates before it writes, stages every output under a temporary directory, refuses path escape attempts, and restores touched outputs if a replacement fails.
 
-## Data flow
+## Optional AD/DNS learning-lab boundary
 
-CSV files under `data/` are the source of truth. `tools/labtool.py generate` renders individual ticket records, an import-mapping CSV, a metrics report, and a machine-readable evidence summary. Validation detects missing relationships and stale derived files.
+The AD scripts are intentionally not generic administration tools.
+
+- Fixed synthetic DNS root: `northstar.example`.
+- Required root: `OU=Northstar Lab,DC=northstar,DC=example`.
+- Required root sentinel: `SYNTHETIC-NORTHSTAR-PORTFOLIO-LAB-V2`.
+- Eligible users require the `SYNTHETIC Northstar portfolio lab identity` marker and must remain under the marked root OU.
+- Eligible groups must be in `OU=Groups` under the marked root, use the synthetic group marker, and appear in `data/ad_groups.csv`.
+- Protected, administrative, service-account, outside-OU, and unmarked objects are rejected before a mutation cmdlet is reached.
+
+State-changing actions require `-Execute`, a fictional ticket/request ID, `ShouldProcess`, and a secret-free audit line under ignored `evidence/private/`. `-WhatIf` must not prompt for a password.
+
+## Console boundary
+
+The static console is a reviewer experience, not an ITSM system. It provides no authentication, write controls, live SLA clock, device action, ticket update, asset wipe, or third-party integration. It reads only the generated local JSON artifact and uses hash routes so record links reload safely on GitHub Pages.
