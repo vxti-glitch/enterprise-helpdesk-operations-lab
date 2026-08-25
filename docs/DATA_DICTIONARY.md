@@ -1,44 +1,55 @@
 # Data dictionary
 
-## `data/tickets.csv`
+> All values described here are fictional portfolio data.
 
-| Field | Meaning |
+## Tickets and requests
+
+`data/tickets.csv` contains final record metadata and narrative fields. Incidents use `INC###`; service requests use `REQ###`. Migrated request records retain their previous `INC###` value in `legacy_id` so old references can be understood without treating a request as an incident.
+
+| Field group | Meaning |
 |---|---|
-| `ticket_id` | Synthetic record number (`INC001`-`INC040`) |
-| `type` | Incident or service request |
-| `opened_at` | ISO 8601 UTC timestamp for intake |
-| `first_response_at` | First technician acknowledgement |
-| `resolved_at` | Resolution/fulfillment timestamp; includes downstream completion after escalation |
-| `caller` / `department` | Fictional user context |
-| `summary` | Concise reported issue |
-| `impact` | `1-High`, `2-Medium`, or `3-Low` |
-| `urgency` | `1-High`, `2-Medium`, or `3-Low` |
-| `priority` | `P1` through `P4`; target lookup key |
-| `category` / `subcategory` | Routing and reporting classification |
-| `assignment_group` | Final resolver group in the modeled workflow |
-| `state` | Final state represented by the record |
-| `resolution_code` | Modeled closure classification |
-| `escalated` | Whether Tier 1 handed the record to another group |
-| `first_contact_resolution` | Whether Tier 1 resolved it in the first support interaction without reassignment or later user contact |
-| `kb_reference` | Linked article under `kb/`, when relevant |
-| `asset_id` | Linked synthetic device, when relevant |
-| `environment` | Supported platform/context |
-| `initial_report` | Caller-facing problem statement |
-| `diagnostic_summary` | Meaningful checks and results, not a click-by-click transcript |
-| `root_cause` | Confirmed cause or bounded finding when escalated |
-| `resolution` | Action taken by Tier 1 or final resolver |
-| `validation` | Evidence that service was restored or the request completed |
-| `user_communication` | Closure or handoff message phrased for the user |
-| `evidence_ref` | Sanitized committed evidence path, or `none` |
+| `ticket_id`, `legacy_id`, `type` | Record identity and incident/request distinction |
+| `caller_id`, `caller`, `department`, `asset_id` | Stable fictional relationship keys and display context |
+| `impact`, `urgency`, `priority`, `priority_override_reason` | Priority policy inputs; an exception requires a documented reason |
+| `assignment_group`, `state`, `resolution_code` | Final modeled resolver and closure outcome |
+| `initial_report` through `user_communication` | Interview-ready fictional narrative, not a production transcript |
+| `opened_at`, `first_response_at`, `resolved_at`, `escalated`, `first_contact_resolution` | Human-readable summary values that validation checks against the event history |
+| `evidence_ref` | Repository-relative path under `evidence/`, or `none` |
 
-## SLA calculation
+## Event history
 
-Targets in `data/sla_targets.csv` use elapsed minutes for reproducibility. This simplified model does not pause for business hours, awaiting-user state, maintenance windows, or holidays. A ticket is compliant only when both response and resolution durations are less than or equal to the priority targets.
+`data/ticket_events.csv` is the source of truth for operational timing and state transitions.
 
-## `data/users.csv`
+| Event | Meaning |
+|---|---|
+| `Opened` | Fictional report entered the historical record |
+| `Acknowledged` | First Tier 1 response; used for response timing |
+| `Work note` | Internal documented observation or next action |
+| `Assigned` / `Escalated` | Assignment and resolver handoff; escalation is derived from the event |
+| `Pending user` / `Pending vendor` | Explicit intermediate fictional state; the simplified SLA model does not pause its clock |
+| `First-contact resolution` | Event marker used with no escalation to derive FCR |
+| `Resolved` / `Closed` | Resolution timing and historical closure |
 
-Every identity is fictional and uses the reserved `northstar.example` domain. `sam_account_name` is used by the optional AD import script. `manager_email` provides workflow context only.
+All timestamps are ISO 8601 UTC values. The simplified SLA clock is continuous elapsed time. It intentionally excludes business-hours calendars, holidays, maintenance windows, and pause accounting.
 
-## `data/assets.csv`
+## Relationships
 
-Serial values begin with `SYN-` and are not manufacturer serial numbers. IP addresses use RFC 5737 documentation networks. `last_verified` is a synthetic date used in the inventory exercise.
+- `caller_id` resolves to `data/users.csv`.
+- `asset_id` resolves to `data/assets.csv`.
+- `assignment_group` resolves to `data/resolver_groups.csv`.
+- Service requests require `data/request_items.csv` and at least one `data/request_tasks.csv` row.
+- `kb_reference` resolves to an article under `kb/` unless its value is `none`.
+- `priority` must match `data/priority_matrix.csv` unless `priority_override_reason` is present.
+
+## ServiceNow-style staging data
+
+`data/servicenow_import/` is a **mapping aid** for a personal developer instance, not a ready-to-run production import. It uses external source IDs, labels every row simulated, keeps incidents separate from requests, and expects users, resolver groups, transforms, and system-managed numbering to be configured by the learner.
+
+## Evidence values
+
+| Label | Meaning |
+|---|---|
+| `SIMULATED` | Fictitious content made for the portfolio lab |
+| `SAMPLE OUTPUT` | Committed synthetic example of an evidence format |
+| `APPLICATION SCREENSHOT` | Genuine view of this static console displaying simulated data |
+| `LAB-EXECUTED` | Reserved for evidence personally captured in an authorized lab after redaction |

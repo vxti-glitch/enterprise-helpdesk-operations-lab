@@ -1,32 +1,20 @@
-# Study and customization checklist
+# Project status and personal evidence roadmap
 
-## Understand before publishing
+## Repository controls completed
 
-- [ ] Explain why every record is labeled simulated.
-- [ ] Walk through INC012 without reading the ticket word for word.
-- [ ] Explain why INC009 and INC039 are escalated instead of "solved" by Tier 1.
-- [ ] Explain the difference between impact, urgency, and priority.
-- [ ] Calculate one response and resolution duration manually.
-- [ ] Explain why the SLA model is simpler than a production calendar.
-- [ ] Describe the two safeguards required for an AD change.
-- [ ] Explain why imported AD users are disabled and passwordless.
-- [ ] Describe when to use a KB article and when to escalate.
-- [ ] Distinguish asset recovery from readiness for reassignment.
+- [x] Fictional-data and non-employment boundary appears in the README, generated records, metrics, and console header.
+- [x] Event-derived metrics, priority policy, incidents/requests, request tasks, and relationship validation are in the repository.
+- [x] Generated artifacts, staging mappings, and browser data are reproducible and freshness-checked.
+- [x] PowerShell mutation scripts use a fixed synthetic domain, sentinel-marked lab OU, object markers, protected-object rejection, allowlisted groups, `ShouldProcess`, and secret-free audit output.
+- [x] Static console provides a reviewer path, deep links, responsive ticket views, accessibility controls, and genuine screenshots displaying simulated data.
+- [x] Source and generated artifacts are tested before a branch is published.
 
-## Customize
+## Personal lab work — optional and not claimed yet
 
-- [ ] Replace the company name if desired while retaining a reserved domain.
-- [ ] Rewrite at least five tickets in your own words.
-- [ ] Choose three cases and perform them in an isolated lab.
-- [ ] Capture and redact your own evidence; do not use fabricated screenshots.
-- [ ] Update tickets and timestamps to match what you actually practiced.
-- [ ] Regenerate and validate all derived files.
-- [ ] Update the README resume language to match your exact level of execution.
+- [ ] Personally build an isolated AD/DNS and Windows client lab, if desired.
+- [ ] Recreate three to five cases in an authorized ServiceNow PDI or local lab.
+- [ ] Capture and redact personal evidence, then label it `LAB-EXECUTED` only after execution.
+- [ ] Rewrite selected fictional narratives in your own voice after you can explain each technical decision.
+- [ ] Update resume language to match the exact work you personally performed.
 
-## Publish
-
-- [ ] Search the entire repository for real email addresses and secrets.
-- [ ] Review every image at full resolution.
-- [ ] Run validation, unit tests, and PowerShell parser checks.
-- [ ] Confirm the ZIP excludes `evidence/private/`, `.git/`, caches, and real credentials.
-- [ ] Push to a new GitHub repository and verify links render correctly.
+The second list is intentionally a learning roadmap, not a claim that any unperformed activity has occurred.
