@@ -66,6 +66,36 @@ test("new routes begin at the heading instead of a retained queue scroll positio
   expect(errors).toEqual([]);
 });
 
+test("timeline markers align to the guide and leave room before every event label", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  for (const ticketId of ["INC009", "INC012"]) {
+    await page.goto(`/#/tickets/${ticketId}`);
+    const measurements = await page.locator(".timeline li").evaluateAll((items) => {
+      const timeline = document.querySelector(".timeline");
+      const timelineBox = timeline.getBoundingClientRect();
+      const guide = getComputedStyle(timeline, "::before");
+      const guideX = timelineBox.left + Number.parseFloat(guide.left);
+      return items.map((item) => {
+        const itemBox = item.getBoundingClientRect();
+        const labelBox = item.querySelector("strong").getBoundingClientRect();
+        const marker = getComputedStyle(item, "::before");
+        const markerWidth = Number.parseFloat(marker.width) + Number.parseFloat(marker.borderLeftWidth) + Number.parseFloat(marker.borderRightWidth);
+        const markerLeft = itemBox.left + Number.parseFloat(marker.left);
+        return {
+          labelGap: labelBox.left - (markerLeft + markerWidth),
+          markerToGuide: markerLeft + markerWidth / 2 - guideX,
+        };
+      });
+    });
+    expect(measurements).not.toHaveLength(0);
+    for (const measurement of measurements) {
+      expect(measurement.labelGap).toBeGreaterThanOrEqual(5);
+      expect(Math.abs(measurement.markerToGuide)).toBeLessThanOrEqual(1);
+    }
+  }
+  expect(errors).toEqual([]);
+});
+
 test("mobile evidence, deep links, and every route avoid page-level overflow", async ({ page }) => {
   const errors = collectConsoleErrors(page);
   await page.setViewportSize({ width: 320, height: 720 });
