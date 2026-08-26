@@ -1,21 +1,21 @@
 asset_id,asset_type,manufacturer,model,synthetic_serial,hostname,assigned_to,department,os,status,location,documentation_ip,purchase_date,warranty_end,last_verified
-NS-LT-001,Laptop,Dell,Latitude 5440,SYN-DL-000001,NS-LT-001,Maya Chen,Finance,Windows 11 Enterprise 24H2,Assigned,Raleigh HQ,192.0.2.11,2025-03-11,2028-03-11,2026-07-28
+NS-LT-001,Laptop,Dell,Latitude 5440,SYN-DL-000001,NS-LT-001,Maya Chen,Finance,Windows 11 Enterprise 24H2,Assigned,Northstar HQ,192.0.2.11,2025-03-11,2028-03-11,2026-07-28
 NS-LT-002,Laptop,Lenovo,ThinkPad T14 Gen 4,SYN-LN-000002,NS-LT-002,Daniel Brooks,Sales,Windows 11 Enterprise 24H2,Assigned,Remote,192.0.2.12,2025-03-12,2028-03-12,2026-07-28
-NS-LT-003,Laptop,Dell,Latitude 5440,SYN-DL-000003,NS-LT-003,Sofia Ramirez,HR,Windows 11 Enterprise 24H2,Assigned,Raleigh HQ,192.0.2.13,2025-03-13,2028-03-13,2026-07-25
-NS-LT-004,Laptop,Lenovo,ThinkPad T14 Gen 4,SYN-LN-000004,NS-LT-004,Marcus Lee,Operations,Windows 11 Enterprise 24H2,Repair,Raleigh HQ,192.0.2.14,2025-03-14,2028-03-14,2026-07-26
+NS-LT-003,Laptop,Dell,Latitude 5440,SYN-DL-000003,NS-LT-003,Sofia Ramirez,HR,Windows 11 Enterprise 24H2,Assigned,Northstar HQ,192.0.2.13,2025-03-13,2028-03-13,2026-07-25
+NS-LT-004,Laptop,Lenovo,ThinkPad T14 Gen 4,SYN-LN-000004,NS-LT-004,Marcus Lee,Operations,Windows 11 Enterprise 24H2,Repair,Northstar HQ,192.0.2.14,2025-03-14,2028-03-14,2026-07-26
 NS-LT-005,Laptop,Dell,Latitude 5440,SYN-DL-000005,NS-LT-005,Olivia Bennett,Finance,Windows 11 Enterprise 24H2,Assigned,Remote,192.0.2.15,2025-03-15,2028-03-15,2026-07-28
 NS-LT-006,Laptop,Lenovo,ThinkPad T14 Gen 4,SYN-LN-000006,NS-LT-006,Ethan Carter,Sales,Windows 11 Enterprise 24H2,Assigned,Remote,192.0.2.16,2025-03-16,2028-03-16,2026-07-27
-NS-LT-007,Laptop,Dell,Precision 3581,SYN-DL-000007,NS-LT-007,Noah Williams,Engineering,Windows 11 Enterprise 24H2,Assigned,Raleigh HQ,192.0.2.17,2025-03-17,2028-03-17,2026-07-27
-NS-LT-008,Laptop,Lenovo,ThinkPad X1 Carbon Gen 11,SYN-LN-000008,NS-LT-008,Ava Mitchell,Management,Windows 11 Enterprise 24H2,Assigned,Raleigh HQ,192.0.2.18,2025-03-18,2028-03-18,2026-07-29
+NS-LT-007,Laptop,Dell,Precision 3581,SYN-DL-000007,NS-LT-007,Noah Williams,Engineering,Windows 11 Enterprise 24H2,Assigned,Northstar HQ,192.0.2.17,2025-03-17,2028-03-17,2026-07-27
+NS-LT-008,Laptop,Lenovo,ThinkPad X1 Carbon Gen 11,SYN-LN-000008,NS-LT-008,Ava Mitchell,Management,Windows 11 Enterprise 24H2,Assigned,Northstar HQ,192.0.2.18,2025-03-18,2028-03-18,2026-07-29
 NS-LT-009,Laptop,Dell,Precision 3581,SYN-DL-000009,NS-LT-009,Priya Patel,Engineering,Windows 11 Enterprise 24H2,Assigned,Remote,192.0.2.19,2025-03-19,2028-03-19,2026-07-27
-NS-LT-010,Laptop,Lenovo,ThinkPad T14 Gen 4,SYN-LN-000010,NS-LT-010,Liam Foster,Operations,Windows 11 Enterprise 24H2,Assigned,Raleigh HQ,192.0.2.20,2025-03-20,2028-03-20,2026-07-25
-NS-LT-011,Laptop,Dell,Latitude 5440,SYN-DL-000011,NS-LT-011,Grace Turner,HR,Windows 11 Enterprise 24H2,Assigned,Raleigh HQ,192.0.2.21,2025-03-21,2028-03-21,2026-07-25
+NS-LT-010,Laptop,Lenovo,ThinkPad T14 Gen 4,SYN-LN-000010,NS-LT-010,Liam Foster,Operations,Windows 11 Enterprise 24H2,Assigned,Northstar HQ,192.0.2.20,2025-03-20,2028-03-20,2026-07-25
+NS-LT-011,Laptop,Dell,Latitude 5440,SYN-DL-000011,NS-LT-011,Grace Turner,HR,Windows 11 Enterprise 24H2,Assigned,Northstar HQ,192.0.2.21,2025-03-21,2028-03-21,2026-07-25
 NS-LT-012,Laptop,Lenovo,ThinkPad T14 Gen 4,SYN-LN-000012,NS-LT-012,Caleb Johnson,Sales,Windows 11 Enterprise 24H2,Assigned,Remote,192.0.2.22,2025-03-22,2028-03-22,2026-07-26
-NS-LT-013,Laptop,Dell,Latitude 5440,SYN-DL-000013,NS-LT-013,Nina Park,Finance,Windows 11 Enterprise 24H2,Assigned,Raleigh HQ,192.0.2.23,2025-03-23,2028-03-23,2026-07-28
+NS-LT-013,Laptop,Dell,Latitude 5440,SYN-DL-000013,NS-LT-013,Nina Park,Finance,Windows 11 Enterprise 24H2,Assigned,Northstar HQ,192.0.2.23,2025-03-23,2028-03-23,2026-07-28
 NS-LT-014,Laptop,Lenovo,ThinkPad T14 Gen 4,SYN-LN-000014,NS-LT-014,Lucas Reed,Sales,Windows 11 Enterprise 24H2,Recovered,IT Storage,192.0.2.24,2025-03-24,2028-03-24,2026-07-20
-NS-LT-015,Laptop,Dell,Latitude 5450,SYN-DL-000015,NS-LT-015,Jordan Kim,Finance,Windows 11 Enterprise 24H2,Assigned,Raleigh HQ,192.0.2.25,2026-06-02,2029-06-02,2026-07-13
+NS-LT-015,Laptop,Dell,Latitude 5450,SYN-DL-000015,NS-LT-015,Jordan Kim,Finance,Windows 11 Enterprise 24H2,Assigned,Northstar HQ,192.0.2.25,2026-06-02,2029-06-02,2026-07-13
 NS-LT-016,Laptop,Dell,Latitude 5450,SYN-DL-000016,NS-LT-016,,Unassigned,Windows 11 Enterprise 24H2,Stock,IT Storage,192.0.2.26,2026-06-03,2029-06-03,2026-07-24
 NS-LT-017,Laptop,Lenovo,ThinkPad T14 Gen 4,SYN-LN-000017,NS-LT-017,,Unassigned,Windows 11 Enterprise 24H2,Repair,Vendor Depot,192.0.2.27,2025-04-01,2028-04-01,2026-07-21
 NS-LT-018,Laptop,Dell,Latitude 5440,SYN-DL-000018,NS-LT-018,,Unassigned,Windows 11 Enterprise 24H2,Loaner,IT Storage,192.0.2.28,2025-04-02,2028-04-02,2026-07-24
-NS-WS-019,Desktop,Dell,OptiPlex 7010,SYN-DW-000019,NS-WS-019,,Operations,Windows 11 Enterprise 24H2,Shared,Raleigh HQ,192.0.2.29,2025-04-03,2028-04-03,2026-07-25
-NS-WS-020,Desktop,Lenovo,ThinkCentre M90q Gen 4,SYN-LW-000020,NS-WS-020,,Finance,Windows 11 Enterprise 24H2,Shared,Raleigh HQ,192.0.2.30,2025-04-04,2028-04-04,2026-07-28
+NS-WS-019,Desktop,Dell,OptiPlex 7010,SYN-DW-000019,NS-WS-019,,Operations,Windows 11 Enterprise 24H2,Shared,Northstar HQ,192.0.2.29,2025-04-03,2028-04-03,2026-07-25
+NS-WS-020,Desktop,Lenovo,ThinkCentre M90q Gen 4,SYN-LW-000020,NS-WS-020,,Finance,Windows 11 Enterprise 24H2,Shared,Northstar HQ,192.0.2.30,2025-04-04,2028-04-04,2026-07-28

@@ -57,7 +57,7 @@ try {
             throw 'Pester is required for PowerShell safety tests. Install Pester or use -SkipPester only for a limited local syntax check.'
         }
         Import-Module $pester.Path -Force
-        $pesterResult = Invoke-Pester -Script (Join-Path $repoRoot 'tests\powershell\NorthstarLabGuard.Tests.ps1') -PassThru
+        $pesterResult = Invoke-Pester -Path (Join-Path $repoRoot 'tests\powershell\NorthstarLabGuard.Tests.ps1') -PassThru
         if ($pesterResult.FailedCount -gt 0) {
             throw 'PowerShell safety tests failed.'
         }
