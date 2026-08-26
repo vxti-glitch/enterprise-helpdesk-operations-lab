@@ -4,7 +4,7 @@ version = "2.0.0"
 description = "A clearly labeled, event-derived Tier 1 service-desk portfolio console and lab"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "I'vion Morgan" }]
+authors = [{ name = "vxti-glitch" }]
 
 [tool.ruff]
 line-length = 100
