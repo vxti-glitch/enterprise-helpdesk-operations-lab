@@ -89,6 +89,11 @@ h3 { font-size: 1.02rem; margin: 0 0 .35rem; }
 .miss-list strong { color: var(--navy); }
 .tour { align-items: center; display: flex; gap: 1rem; justify-content: space-between; margin: 1.25rem 0; padding: 1rem; }
 .tour p { margin: 0; }
+.boundary-card { align-items: center; display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr) auto; margin: 1.25rem 0; }
+.boundary-card h2 { margin: .2rem 0 .45rem; }
+.boundary-card p { margin: 0; }
+.capability-map { margin: 2rem 0; }
+.capability-map .card p { margin: .55rem 0 0; }
 .tour-progress { color: var(--muted); font-size: .84rem; font-weight: 700; }
 
 .page-head { margin-bottom: 1.3rem; }
@@ -174,6 +179,7 @@ dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 }
 
 @media (max-width: 580px) {
+  .boundary-card { align-items: stretch; grid-template-columns: 1fr; }
   .primary-nav { overflow-x: auto; flex-wrap: nowrap; padding-left: 1rem; padding-right: 1rem; }
   .primary-nav a { white-space: nowrap; }
   .metric-grid, .case-grid, .panel-grid, .primary-filter-grid, .filter-grid { grid-template-columns: minmax(0, 1fr); }
