@@ -9,7 +9,7 @@
 
 ![Application view displaying simulated portfolio data](evidence/screenshots/application/overview.png)
 
-Northstar is an offline-capable help-desk portfolio lab designed around the journey a remote Tier 1 analyst needs to explain: intake, safe diagnosis, clear user communication, escalation boundaries, identity lifecycle awareness, inventory context, and reproducible reporting.
+Northstar is an offline-capable help-desk portfolio lab designed around the journey a remote Tier 1 analyst needs to explain: intake, safe diagnosis, clear user communication, escalation boundaries, identity lifecycle awareness, inventory context, and reproducible reporting. The browser console includes saved technician views plus a browser-only internal-note/public-reply composer so reviewers can see both queue triage and ticket documentation.
 
 The project is deliberately not a fake production ServiceNow clone. It is a static historical operations console built from validated fictional data, plus optional lab scripts that refuse to operate outside a marked `northstar.example` Active Directory learning environment.
 

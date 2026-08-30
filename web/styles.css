@@ -134,6 +134,23 @@ dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 .key-value > div { border-bottom: 1px solid var(--line); padding-bottom: .6rem; }
 .key-value > div:last-child { border: 0; padding-bottom: 0; }
 .callout { border-left: 4px solid var(--amber); background: var(--amber-soft); border-radius: .25rem; color: #543000; padding: .85rem 1rem; }
+.queue-strip { align-items: stretch; background: #0f2746; border: 1px solid #28496e; border-radius: .8rem; display: flex; gap: .45rem; margin: 0 0 1rem; overflow-x: auto; padding: .65rem; }
+.queue-label { align-self: center; color: #c9d9ed; font-size: .72rem; font-weight: 850; letter-spacing: .08em; padding: 0 .55rem; text-transform: uppercase; white-space: nowrap; }
+.queue-strip button { align-items: center; background: #17365e; border: 1px solid #31577f; border-radius: .55rem; color: #fff; cursor: pointer; display: flex; font: inherit; gap: .7rem; justify-content: space-between; min-width: 8.5rem; padding: .65rem .75rem; text-align: left; white-space: nowrap; }
+.queue-strip button:hover, .queue-strip button:focus-visible { background: #1d4778; border-color: #7ab4ff; }
+.queue-strip button strong { align-items: center; background: #eaf3ff; border-radius: 999px; color: #0a4f9f; display: inline-flex; font-size: .75rem; height: 1.55rem; justify-content: center; min-width: 1.55rem; padding: 0 .35rem; }
+.note-composer { margin-top: 1rem; padding: 1rem; }
+.composer-heading, .composer-actions { align-items: center; display: flex; gap: 1rem; justify-content: space-between; }
+.composer-heading h2 { margin: .15rem 0 .7rem; }
+.note-tabs { display: flex; gap: .35rem; margin-bottom: .75rem; }
+.note-tabs button { background: #edf3fa; border: 1px solid var(--line); border-radius: .45rem; color: var(--ink); cursor: pointer; font: inherit; font-size: .82rem; font-weight: 800; padding: .5rem .7rem; }
+.note-tabs button.is-active { background: #123b6c; border-color: #123b6c; color: #fff; }
+.note-composer label { display: block; font-size: .8rem; font-weight: 800; margin-bottom: .35rem; }
+.note-composer textarea { border: 1px solid #9db2ca; border-radius: .55rem; box-sizing: border-box; font: inherit; min-height: 7rem; padding: .7rem; resize: vertical; width: 100%; }
+.note-composer textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #d9eaff; outline: 0; }
+.composer-actions { margin-top: .75rem; }
+.composer-actions p { color: var(--muted); font-size: .78rem; margin: 0; }
+.timeline .draft-event::before { background: var(--amber); }
 .sr-only { height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; clip: rect(0, 0, 0, 0); white-space: nowrap; }
 .compact-list { display: grid; gap: .5rem; list-style: none; margin: 0; padding: 0; }
 .compact-list li { border-bottom: 1px solid var(--line); padding-bottom: .5rem; }
@@ -170,6 +187,7 @@ dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
   .detail-dl dd { overflow-wrap: anywhere; }
   .architecture { min-width: 0; }
   h1 { font-size: 2rem; }
+  .composer-heading, .composer-actions { align-items: stretch; flex-direction: column; }
 }
 
 @media (prefers-reduced-motion: reduce) {
