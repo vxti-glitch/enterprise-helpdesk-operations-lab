@@ -11,6 +11,8 @@
 
 Northstar is an offline-capable help-desk portfolio lab designed around the journey a remote Tier 1 analyst needs to explain: intake, safe diagnosis, clear user communication, escalation boundaries, identity lifecycle awareness, inventory context, and reproducible reporting. The browser console includes saved technician views plus a browser-only internal-note/public-reply composer so reviewers can see both queue triage and ticket documentation.
 
+The dataset contains **40 simulated ITSM cases with optional ServiceNow learning-instance staging mappings**. The staging files are mapping aids, not a ready production import or evidence that I administered ServiceNow.
+
 The project is deliberately not a fake production ServiceNow clone. It is a static historical operations console built from validated fictional data, plus optional lab scripts that refuse to operate outside a marked `northstar.example` Active Directory learning environment.
 
 ## Start here — a three-minute reviewer path
@@ -19,6 +21,7 @@ The project is deliberately not a fake production ServiceNow clone. It is a stat
 2. Read [INC012](tickets/generated/INC012.md) for a DNS diagnosis, [INC009](tickets/generated/INC009.md) for a security escalation, and [INC040](tickets/generated/INC040.md) for a time-sensitive meeting issue.
 3. Inspect the event-derived [SLA report](docs/metrics/SLA_REPORT.md), then review the [PowerShell safety model](docs/ACTIVE_DIRECTORY_LAB.md).
 4. Use the [demo script](docs/DEMO_SCRIPT.md) to rehearse how to explain the project in an interview.
+5. Read [How I built and verified this](docs/HOW_I_BUILT_AND_VERIFIED_THIS.md) for my design decisions, corrections, test scope, and remaining fictional boundaries.
 
 ## What the project demonstrates
 
@@ -40,6 +43,8 @@ The project is deliberately not a fake production ServiceNow clone. It is a stat
 - A replacement for a production ITSM tool, security process, approval workflow, or change-control system.
 
 Add `LAB-EXECUTED` evidence only after personally performing a task in an authorized learning lab and redacting the capture. See [the evidence guide](docs/EVIDENCE_GUIDE.md) and [three-case personal-lab roadmap](docs/PERSONAL_LAB_ROADMAP.md).
+
+[`evidence/real-labs/README.md`](evidence/real-labs/README.md) defines the strict schema for up to three future genuine labs. It contains no generated results.
 
 ## Run it locally (Windows)
 
