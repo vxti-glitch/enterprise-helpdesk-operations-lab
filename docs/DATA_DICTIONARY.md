@@ -41,9 +41,9 @@ All timestamps are ISO 8601 UTC values. The simplified SLA clock is continuous e
 - `kb_reference` resolves to an article under `kb/` unless its value is `none`.
 - `priority` must match `data/priority_matrix.csv` unless `priority_override_reason` is present.
 
-## ServiceNow-style staging data
+## Optional ServiceNow learning-instance staging mappings
 
-`data/servicenow_import/` is a **mapping aid** for a personal developer instance, not a ready-to-run production import. It uses external source IDs, labels every row simulated, keeps incidents separate from requests, and expects users, resolver groups, transforms, and system-managed numbering to be configured by the learner.
+`data/servicenow_import/` is an optional **mapping aid** for a ServiceNow learning instance, not a ready-to-run production import. It uses external source IDs, labels every row simulated, keeps incidents separate from requests, and expects users, resolver groups, transforms, and system-managed numbering to be configured by the learner.
 
 ## Evidence values
 
